@@ -184,6 +184,40 @@
 
 ---
 
+## 추가 개선 (2026-10-15 문서 검토)
+
+### 16. `run` 액션 정리 (문서와 manifest 불일치)
+
+- **현상**: [usage.md](usage.md)와 [usage.ko.md](usage.ko.md)에 `herdr-devrun.run`(`up`과 같은 동작)을 추가했지만 `herdr-plugin.toml`에는 없어서, 문서의 액션이 실제로는 실행되지 않는다.
+- **개선안**: 둘 중 하나로 맞춘다.
+  - (a) `[[actions]]`에 `run` / `run-windows`를 추가한다. 동작은 `up`과 같은 `src/devrun.py up`을 쓴다. 팔레트 제목은 `devrun: run services`로 한다.
+  - (b) `run`이 꼭 필요하지 않다면 문서 두 곳에서 `run` 행과 "`up` (또는 `run`…)" 표기를 되돌린다.
+- **범위**: `herdr-plugin.toml`(a) 또는 `docs/usage.md`, `docs/usage.ko.md`(b)
+- **확인**: (a) `herdr plugin unlink` 후 `link`하고 팔레트에 `run`이 보이는지, 실행 시 서비스가 `up`과 같게 뜨는지 본다. (b) 문서에 `run`이 남아 있지 않은지 `grep`으로 확인한다.
+
+### 17. agents 패널에 서비스 상태 표시 (feedbag 방식)
+
+- **현상**: devrun 상태는 대시보드 pane을 열어야만 보인다. herdr agents 패널에서 한눈에 볼 수 없다.
+- **원인**: devrun은 `pane.report_agent`, `pane.report_metadata`, `workspace.move`를 쓰지 않는다. 하단 고정 블록을 만드는 `herdr-dock` 규칙도 따르지 않는다([herdr-ai-feedbag/docs/architecture.md](../../herdr-ai-feedbag/docs/architecture.md)의 "herdr-dock 공용 규칙" 참고).
+- **개선안**:
+  - `herdr-dock` workspace에 devrun 전용 pane을 하나 두고 가짜 agent(`devrun`)로 등록한다. 빈 pane이 있으면 재사용하고, 없으면 `pane split --direction down`으로 나눈다.
+  - 상태는 `$dr_*` 토큰으로 올린다(예: `2/3 실행 중`). 값이 없으면 herdr가 그리지 않는다.
+  - 5초마다 agent를 다시 등록하고 dock을 맨 뒤로 옮긴다.
+  - 이 pane을 host로 쓸지, 대시보드와 분리할지는 정한다. 대시보드를 그대로 쓰면 pane을 닫을 때 상태 보고도 멈춘다. 별도 host pane을 권장한다.
+  - 끝날 때는 자기 pane만 닫고, dock에 다른 pane이 없을 때만 workspace를 닫는다.
+- **설정 형식**: 없음 (기본 동작). 끄는 설정이 필요하면 `⚙`로 따로 정한다.
+- **범위**: 새 `src/dock.py`(또는 `core.py` 추가), `src/herdr_api.py`(feedbag 것을 복사, 공유 모듈은 없음), `devrun.py`(`up`/`down` 후 갱신), 문서
+- **확인**: 실제 herdr 0.9.0에서 `pane.report_agent`, `workspace.move`의 응답 형식을 먼저 확인한다. 그 다음 agents 패널에 `devrun` 행이 맨 아래에 뜨고, 서비스 시작·중지 때 숫자가 바뀌는지 본다. Windows named pipe 경로도 확인한다.
+
+### 18. 버전·설치 경로 문서 정리
+
+- **현상**: [todo.md](todo.md) 13번은 버전을 `0.2.0`(`v0.2.0`)이라고 적었지만, `herdr-plugin.toml`은 `0.3.0`이다. 13번의 설치 예시 저장소 이름도 `herdrPlugin-devrun`인데, usage.md와 README는 `herdr-devrun`을 쓴다.
+- **개선안**: 13번 본문을 현재 값(`0.3.0`, `vrwolf1004/herdr-devrun`)으로 고친다. 태그는 `v0.3.0`이 실제로 있는지 `git tag`로 확인한 뒤 없으면 만든다.
+- **범위**: `docs/todo.md`, 필요하면 태그
+- **확인**: `git tag`에 `v0.3.0`이 있는지, 문서의 버전과 `herdr-plugin.toml`의 `version`이 같은지 본다.
+
+---
+
 ## 점검했지만 문제없던 것
 
 - **여러 워크스페이스**: `herdr pane list`는 `--workspace`가 없으면 모든 워크스페이스의 pane을 돌려준다. 다른 워크스페이스에 있는 서비스 pane도 살아 있는 것으로 판단한다. 임시 워크스페이스를 만들어 확인함.
