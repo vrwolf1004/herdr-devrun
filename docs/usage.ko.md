@@ -9,7 +9,7 @@
 ### GitHub에서 설치
 
 ```sh
-herdr plugin install vrwolf1004/herdrPlugin-devrun
+herdr plugin install vrwolf1004/herdr-devrun
 herdr plugin list                                 # herdr-devrun 이 enabled 인지 확인
 ```
 
@@ -19,7 +19,7 @@ herdr plugin list                                 # herdr-devrun 이 enabled 인
 ### 로컬 폴더로 등록 (개발용)
 
 ```sh
-herdr plugin link C:\work\app\herdrPlugin-devrun   # Linux/macOS 는 clone 한 경로
+herdr plugin link C:\work\app\herdr-devrun   # Linux/macOS 는 clone 한 경로
 ```
 
 - `link`는 폴더를 복사하지 않고 그대로 등록한다. 파일을 고치면 다음 실행부터 바로 반영된다.

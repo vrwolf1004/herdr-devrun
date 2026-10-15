@@ -4,7 +4,7 @@
 
 프로젝트의 백엔드·프론트엔드 같은 개발 서비스를 herdr 탭 하나에 pane 별로 띄우고, 대시보드에서 하나씩 또는 한 번에 시작·중지·재시작하는 herdr 플러그인.
 
-- 저장소: https://github.com/vrwolf1004/herdrPlugin-devrun
+- 저장소: https://github.com/vrwolf1004/herdr-devrun
 - 플러그인 id: `herdr-devrun`
 
 ### 배경

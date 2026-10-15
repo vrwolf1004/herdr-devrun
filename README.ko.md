@@ -25,7 +25,7 @@
 ## 설치
 
 ```sh
-herdr plugin install vrwolf1004/herdrPlugin-devrun
+herdr plugin install vrwolf1004/herdr-devrun
 ```
 
 프로젝트에 `.herdr-devrun.json`을 작성한 뒤 액션이나 대시보드에서 서비스를 관리하세요.

@@ -10,7 +10,7 @@ Requirements:
 ### Install from GitHub
 
 ```sh
-herdr plugin install vrwolf1004/herdrPlugin-devrun
+herdr plugin install vrwolf1004/herdr-devrun
 herdr plugin list                                 # Confirm herdr-devrun is enabled
 ```
 
@@ -20,7 +20,7 @@ herdr plugin list                                 # Confirm herdr-devrun is enab
 ### Link a local folder (development)
 
 ```sh
-herdr plugin link C:\work\app\herdrPlugin-devrun   # On Linux/macOS, use the clone path
+herdr plugin link C:\work\app\herdr-devrun   # On Linux/macOS, use the clone path
 ```
 
 - `link` registers the folder without copying it. Changes are picked up the next time an action runs.

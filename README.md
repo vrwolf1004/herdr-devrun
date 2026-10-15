@@ -25,7 +25,7 @@ A herdr plugin for starting and managing a project's development services in sep
 ## Install
 
 ```sh
-herdr plugin install vrwolf1004/herdrPlugin-devrun
+herdr plugin install vrwolf1004/herdr-devrun
 ```
 
 Create a `.herdr-devrun.json` file in your project, then use the plugin actions or dashboard to manage its services.
