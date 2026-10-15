@@ -1,61 +1,64 @@
-# 사용법
+# Usage
 
-## 1. 설치
+## 1. Install
 
-요구 사항:
-- herdr 0.9.0 이상
-- Python 3.8 이상, 외부 패키지 없음. Windows는 `python`, Linux/macOS는 `python3`가 PATH에 있어야 한다.
+Requirements:
 
-### GitHub에서 설치
+- herdr 0.9.0 or later
+- Python 3.8 or later; no third-party packages required. `python` must be on `PATH` on Windows; `python3` must be on `PATH` on Linux/macOS.
+
+### Install from GitHub
 
 ```sh
 herdr plugin install vrwolf1004/herdrPlugin-devrun
-herdr plugin list                                 # herdr-devrun 이 enabled 인지 확인
+herdr plugin list                                 # Confirm herdr-devrun is enabled
 ```
 
-- 업데이트는 같은 명령을 다시 실행한다. 특정 버전 고정은 `--ref <태그 또는 커밋>`을 붙인다.
-- 빌드 단계가 없어서 내려받은 파일을 그대로 쓴다.
+- Run the same command again to update. Pin a version with `--ref <tag-or-commit>`.
+- There is no build step; the downloaded files are used as-is.
 
-### 로컬 폴더로 등록 (개발용)
+### Link a local folder (development)
 
 ```sh
-herdr plugin link C:\work\app\herdrPlugin-devrun   # Linux/macOS 는 clone 한 경로
+herdr plugin link C:\work\app\herdrPlugin-devrun   # On Linux/macOS, use the clone path
 ```
 
-- `link`는 폴더를 복사하지 않고 그대로 등록한다. 파일을 고치면 다음 실행부터 바로 반영된다.
-- `herdr-plugin.toml`을 고쳤다면(액션 추가 등) `unlink` 후 다시 `link` 한다.
+- `link` registers the folder without copying it. Changes are picked up the next time an action runs.
+- If you change `herdr-plugin.toml` (for example, add an action), unlink and link the plugin again.
 
-### 관리
+### Manage the plugin
 
-- 해제: `herdr plugin unlink herdr-devrun`(link) / `herdr plugin uninstall herdr-devrun`(install)
-- 일시 중지: `herdr plugin disable herdr-devrun` / 다시 사용: `herdr plugin enable herdr-devrun`
+- Unlink: `herdr plugin unlink herdr-devrun` (linked plugin) / uninstall: `herdr plugin uninstall herdr-devrun` (installed plugin)
+- Temporarily disable: `herdr plugin disable herdr-devrun` / re-enable: `herdr plugin enable herdr-devrun`
 
-## 표시 언어
+## Display language
 
-대시보드와 알림 문구는 `en`, `ko`, `ru`, `fr`, `es`, `de`, `ja`를 지원한다. 언어 결정 우선순위는 다음과 같다.
+The dashboard and notifications support `en`, `ko`, `ru`, `fr`, `es`, `de`, and `ja`. The language is selected in this order:
 
-1. 환경변수 `HERDR_DEVRUN_LANG`
-2. 플러그인 설정 파일 `HERDR_PLUGIN_CONFIG_DIR/config.json`의 `"lang"` 값
-3. OS 언어(Windows는 사용자 UI 언어, Linux/macOS는 `LC_ALL`, `LC_MESSAGES`, `LANG` 순서)
-4. 기본값 `en` (OS 언어를 지원하지 않거나 확인할 수 없을 때)
+1. `HERDR_DEVRUN_LANG` environment variable
+2. `"lang"` in `HERDR_PLUGIN_CONFIG_DIR/config.json`
+3. OS language (Windows user-interface language, or `LC_ALL`, `LC_MESSAGES`, then `LANG` on Linux/macOS)
+4. English (`en`) if the OS language is unsupported or cannot be detected
 
-예를 들어 `HERDR_DEVRUN_LANG=ko`로 설정하면 한글 문구를 사용한다. `ko-KR`, `ko_KR.UTF-8` 같은 로케일 표기도 인식한다. 환경변수나 플러그인 설정을 지정하면 OS 언어보다 우선하며, 번역에 없는 문구는 영어 번역으로 대체한다.
+For example, set `HERDR_DEVRUN_LANG=ko` to use Korean. Locale values such as `ko-KR` and `ko_KR.UTF-8` are recognized. An explicitly configured language takes precedence over the OS language. Missing translations fall back to English.
 
-### 액션 id
+### Action IDs
 
-herdr는 액션 id 중복을 허용하지 않는다. 그래서 OS별 실행기(`python` / `python3`)에 맞춰 같은 동작을 두 번 선언하고 Windows 쪽 id에 `-windows`를 붙였다(herdr-file-viewer, herdr-sidebar와 같은 관례). 이 문서는 Linux/macOS id로 쓴다. **Windows에서는 뒤에 `-windows`를 붙인다.**
+herdr does not allow duplicate action IDs. The plugin declares the same behavior separately for each OS to use the appropriate executable (`python` or `python3`), and adds `-windows` to Windows action IDs. This follows conventions used by plugins such as herdr-file-viewer and herdr-sidebar.
 
-| Linux / macOS | Windows | 기능 |
+The table uses Linux/macOS IDs. **On Windows, append `-windows`.**
+
+| Linux / macOS | Windows | Description |
 |---|---|---|
-| `herdr-devrun.init` | `herdr-devrun.init-windows` | 설정 파일 초안 만들기 |
-| `herdr-devrun.up` | `herdr-devrun.up-windows` | 서비스 띄우기 |
-| `herdr-devrun.down` | `herdr-devrun.down-windows` | 서비스 내리기 |
-| `herdr-devrun.restart` | `herdr-devrun.restart-windows` | 다시 띄우기 |
-| `herdr-devrun.panel` | `herdr-devrun.panel-windows` | 대시보드 열기 |
+| `herdr-devrun.init` | `herdr-devrun.init-windows` | Create a draft configuration file |
+| `herdr-devrun.up` | `herdr-devrun.up-windows` | Start services |
+| `herdr-devrun.down` | `herdr-devrun.down-windows` | Stop services |
+| `herdr-devrun.restart` | `herdr-devrun.restart-windows` | Restart services |
+| `herdr-devrun.panel` | `herdr-devrun.panel-windows` | Open the dashboard |
 
-## 2. 단축키 연결
+## 2. Configure shortcuts
 
-herdr `config.toml`(Windows: `%APPDATA%\herdr\config.toml`)에 추가한다. 아래는 Windows 예시이며, Linux/macOS는 `-windows`를 뺀다.
+Add shortcuts to herdr's `config.toml` (on Windows: `%APPDATA%\herdr\config.toml`). This example is for Windows; omit `-windows` on Linux/macOS.
 
 ```toml
 [[keys.command]]
@@ -78,33 +81,33 @@ description = "devrun: stop services"
 ```
 
 ```sh
-herdr config check          # ok 확인
-herdr server reload-config  # 실행 중인 서버에 반영
+herdr config check          # Confirm the configuration is valid
+herdr server reload-config  # Apply it to the running server
 ```
 
-- 키를 정하기 전에 기존 바인딩이나 다른 플러그인 키와 겹치지 않는지 확인한다.
-- 단축키 없이 실행: `herdr plugin action invoke herdr-devrun.up` (지금 포커스된 pane 기준)
+- Check that the keys do not conflict with existing bindings or other plugins.
+- To run an action without a shortcut: `herdr plugin action invoke herdr-devrun.up` (uses the currently focused pane).
 
-## 3. 프로젝트에 설정 파일 만들기
+## 3. Create a project configuration
 
-1. herdr에서 프로젝트 루트 폴더로 이동한 pane을 하나 연다.
-2. `init` 액션을 실행한다.
-3. 프로젝트 루트에 `.herdr-devrun.json`이 생긴다. 알림에 감지한 서비스 수가 표시된다.
-4. 파일을 열어 명령, 폴더, 포트, 환경변수를 실제 실행 방법에 맞게 고친다.
+1. Open a pane in herdr with its working directory at the project root.
+2. Run the `init` action.
+3. A `.herdr-devrun.json` file is created in the project root. A notification shows how many services were detected.
+4. Edit the commands, folders, ports, and environment variables to match your project.
 
-`init` 감지 규칙 (루트와 바로 아래 폴더, 폴더마다 첫 번째로 맞는 하나):
+`init` scans the project root and its immediate child folders. It creates at most one service per folder, using the first matching rule:
 
-| 발견한 파일 | 만들어지는 명령 (Windows / Linux·macOS) |
+| Detected file | Generated command (Windows / Linux and macOS) |
 |---|---|
-| `gradlew.bat` 또는 `gradlew` | `.\gradlew.bat bootRun` / `./gradlew bootRun` |
-| `mvnw.cmd` 또는 `mvnw` | `.\mvnw.cmd spring-boot:run` / `./mvnw spring-boot:run` |
-| `package.json` (`dev` / `start` / `serve` 스크립트) | `pnpm` / `yarn` / `npm run <script>` (lock 파일 기준) |
+| `gradlew.bat` or `gradlew` | `.\gradlew.bat bootRun` / `./gradlew bootRun` |
+| `mvnw.cmd` or `mvnw` | `.\mvnw.cmd spring-boot:run` / `./mvnw spring-boot:run` |
+| `package.json` with a `dev`, `start`, or `serve` script | `pnpm` / `yarn` / `npm run <script>` (selected using lock files) |
 
-- `init`은 지금 OS에 맞는 명령을 `command`에 넣는다. 여러 OS에서 같은 설정 파일을 쓰려면 `command_windows` / `command_unix`를 추가한다(4장).
-- Gradle/Maven 서비스에는 Spring Boot 기본값 `port: 8080`, `url: http://localhost:8080`을 함께 넣는다. 실제 포트와 다르면 고친다.
-- 멀티 모듈 Gradle이나 pnpm 모노레포처럼 루트에서 특정 앱을 지정해야 하는 경우는 감지 결과를 직접 고친다.
+- `init` writes a command for the current OS. To share a configuration across operating systems, add `command_windows` and/or `command_unix` (see section 4).
+- Gradle and Maven services get the Spring Boot defaults `port: 8080` and `url: http://localhost:8080`. Change them if your service uses another port.
+- For multi-module Gradle projects or pnpm monorepos that need a specific app selected, edit the generated command.
 
-## 4. 설정 파일 형식
+## 4. Configuration format
 
 ```json
 {
@@ -132,120 +135,121 @@ herdr server reload-config  # 실행 중인 서버에 반영
 }
 ```
 
-| 항목 | 필수 | 설명 |
+| Field | Required | Description |
 |---|---|---|
-| `tab` | | 탭 이름. 없으면 프로젝트 폴더 이름 |
-| `services` | O | 1개 이상. 순서대로 pane에 배치된다 |
-| `services[].name` | O | pane 이름. 알림과 상태 파일에도 쓰여 중복되면 안 된다 |
-| `services[].command` | O | pane 셸에 그대로 입력할 명령 (Windows: PowerShell, Linux/macOS: 기본 셸) |
-| `services[].command_windows` | | Windows에서 `command` 대신 쓸 명령 |
-| `services[].command_unix` | | Linux/macOS에서 `command` 대신 쓸 명령 |
-| `services[].cwd` | | 설정 파일 기준 상대 경로 (절대 경로도 가능). 없으면 프로젝트 루트. 폴더가 없으면 오류 |
-| `services[].env` | | pane 프로세스에 넣을 환경변수 (`"KEY": "VALUE"`) |
-| `services[].port` | | 서비스가 여는 TCP 포트. "시작 중"과 "실행 중"을 구분하고, 시작 전에 이미 쓰이고 있으면 시작하지 않는다 |
-| `services[].url` | | 대시보드 "브라우저" 버튼(`o`)으로 열 주소 |
-| `services[].depends_on` | | 먼저 준비돼야 하는 서비스 이름 목록. 전체 시작(`up`, 대시보드 `a`)에서 순서를 정한다 (5장) |
-| `services[].start_timeout` | | `depends_on`이 준비되기를 기다리는 최대 초. 기본 120 |
-| `services[].stop_timeout` | | 중지할 때 Ctrl+C 후 프로세스가 끝나기를 기다리는 최대 초. 기본 10 |
+| `tab` | | Tab name; defaults to the project folder name |
+| `services` | Yes | One or more services, arranged into panes in order |
+| `services[].name` | Yes | Pane name. Must be unique; it is also used in notifications and state |
+| `services[].command` | Yes | Command entered directly into the pane shell (PowerShell on Windows; default shell on Linux/macOS) |
+| `services[].command_windows` | | Command to use instead of `command` on Windows |
+| `services[].command_unix` | | Command to use instead of `command` on Linux/macOS |
+| `services[].cwd` | | Path relative to the configuration file (absolute paths are also allowed). Defaults to the project root; an invalid path is an error |
+| `services[].env` | | Environment variables for the pane process, as `"KEY": "VALUE"` |
+| `services[].port` | | TCP port used to distinguish "starting" from "running". The service will not start if the port is already in use |
+| `services[].url` | | URL opened by the dashboard's Browser button (`o`) |
+| `services[].depends_on` | | Services that must be ready first; controls start-all ordering (see section 5) |
+| `services[].start_timeout` | | Maximum seconds to wait for dependencies; default: 120 |
+| `services[].stop_timeout` | | Maximum seconds to wait for process exit after Ctrl+C; default: 10 |
 
-작성 요령:
-- JSON 문자열 안의 `\`는 `\\`로, `"`는 `\"`로 쓴다. 예: `".\\gradlew.bat bootRun"`
-- 여러 명령은 `;`로 잇는다(PowerShell, bash, zsh 공통). 예: `"pnpm install; pnpm run dev"`
-- OS마다 명령이 다르면 `command`에 한쪽을, `command_windows` 또는 `command_unix`에 다른 쪽을 쓴다. 같으면 `command`만 쓴다.
-- 암호화 키, 비밀번호 같은 비밀값은 `env`에 적지 않는다. OS 환경변수로 두면 pane이 물려받는다. 설정 파일은 git에 올라갈 수 있다.
-- 설정 파일을 팀과 공유하지 않으려면 프로젝트 `.gitignore`에 `.herdr-devrun.json`을 추가한다.
-- 설정 검증: 숫자가 아닌 `stop_timeout`/`start_timeout`, 없는 서비스를 가리키는 `depends_on`, 순환(`a → b → a`, 자기 자신 포함)은 오류로 알려 준다.
+Writing tips:
 
-> **보안 주의**: `command`는 그대로 셸에 입력된다. 남의 저장소를 받아 `up`을 실행하면 그 저장소가 정한 명령이 실행된다(npm scripts, Makefile과 같은 성격). 처음 받은 저장소는 실행 전에 `.herdr-devrun.json` 내용을 확인한다.
+- In JSON strings, escape `\` as `\\` and `"` as `\"`. For example: `".\\gradlew.bat bootRun"`.
+- Join multiple commands with `;` (supported by PowerShell, bash, and zsh). For example: `"pnpm install; pnpm run dev"`.
+- If commands differ by OS, put one in `command` and the other in `command_windows` or `command_unix`. If they are the same, use only `command`.
+- Do not put secrets such as encryption keys or passwords in `env`. Use OS environment variables instead. Configuration files may be committed to Git.
+- To keep the configuration out of a shared repository, add `.herdr-devrun.json` to the project's `.gitignore`.
+- Validation reports non-numeric `stop_timeout`/`start_timeout`, unknown `depends_on` services, and dependency cycles (including self-dependencies).
 
-## 5. 실행과 중지
+> **Security:** `command` is entered directly into a shell. Running `up` on an untrusted repository executes commands defined by that repository, similar to running its npm scripts or Makefile. Review `.herdr-devrun.json` before running an unfamiliar project.
 
-| 하고 싶은 것 | 액션 | 동작 |
+## 5. Start and stop services
+
+| Goal | Action | Behavior |
 |---|---|---|
-| 서비스 띄우기 | `up` | 안 떠 있는 서비스를 `depends_on` 순서대로 탭에 실행. 모두 떠 있으면 그 탭으로 이동 |
-| 서비스 내리기 | `down` | 각 pane에 Ctrl+C → 프로세스가 끝나면(최대 `stop_timeout`) 탭 닫기 |
-| 다시 띄우기 | `restart` | down 후 up. 설정 파일을 고친 뒤 반영할 때도 쓴다 |
+| Start services | `up` | Start services that are not running, in `depends_on` order. If all are running, switch to their tab |
+| Stop services | `down` | Send Ctrl+C to each pane, wait for processes to exit (up to `stop_timeout`), then close the tab |
+| Restart | `restart` | Run down, then up. Also use it to apply configuration changes |
 
-- 액션은 실행한 pane의 폴더에서 **위로 올라가며** 설정 파일을 찾는다. 프로젝트 안의 하위 폴더에서 실행해도 된다.
-- `up`은 안 떠 있는 서비스만 띄운다. 일부만 떠 있으면 나머지를 같은 탭에 추가한다.
-- 서비스 하나만 다루려면 대시보드(6장)를 쓴다.
-- 탭이나 pane을 손으로 닫아도 된다. 다음 실행 때 사라진 것을 확인하고 상태를 정리한다.
+- Actions search for the configuration file by walking **up** from the folder of the pane where the action was run. They can be run from a subfolder within the project.
+- `up` starts only services that are not already running. If some are running, the remaining ones are added to the same tab.
+- Use the dashboard (section 6) to manage an individual service.
+- You can close a tab or pane manually. The next run detects removed panes and cleans up the state.
 
-### 실행 순서 (`depends_on`)
+### Start order (`depends_on`)
 
-- 의존 서비스가 **준비되면** 시작한다. 준비 기준: `port`가 있으면 그 포트가 열림(다른 곳에서 띄운 서버여도 인정), 없으면 "실행 중".
-- 의존 서비스가 끝나 버리면(✕ 종료됨) 기다리던 서비스는 "의존 서비스 실패"로 시작하지 않는다. 막 띄운 서비스는 5초 동안 실패로 보지 않는다.
-- `start_timeout`(기본 120초)이 지나도 준비되지 않으면 "대기 시간 초과"로 시작하지 않는다.
-- 시작하지 못한 서비스는 이유와 함께 알림(대시보드는 아래 줄)으로 보여 준다. 예: `web (dependency failed), late (timed out waiting for dependencies)`
-- 대시보드에서 서비스 **하나**를 시작할 때는 직접 고른 것이므로 의존 서비스를 기다리지 않는다.
+- A dependent service starts when its dependencies are **ready**. If a dependency has a `port`, readiness means that port is open (a server started elsewhere also qualifies); without a port, readiness means the service is running.
+- If a dependency exits (✕), a waiting service is not started and is reported as "dependency failed". A service just started by the current plan is given a 5-second grace period before it can be considered failed.
+- If a dependency is not ready within `start_timeout` (default: 120 seconds), the dependent service is not started and is reported as timed out.
+- Services that could not start are reported in a notification (and in the dashboard's message line), for example: `web (dependency failed), late (timed out waiting for dependencies)`.
+- Starting a **single** service from the dashboard does not wait for its dependencies; the user explicitly selected it.
 
-### 포트 충돌
+### Port conflicts
 
-- `port`를 이미 다른 프로세스가 쓰고 있으면 그 서비스는 시작하지 않는다. 띄워도 포트 충돌로 실패하는데, 포트는 열려 있어 "실행 중"으로 잘못 보이기 때문이다.
-- 전체 시작에서는 그 서비스만 건너뛰고(`port in use`) 나머지는 시작한다.
+- If another process already uses a configured `port`, that service is not started. Otherwise the attempted launch may fail while the open port makes the service appear to be running.
+- During start-all, only the service with the conflict is skipped (`port in use`); other services continue starting.
 
-### 중지 대기
+### Stop timeout
 
-- Ctrl+C를 보낸 뒤 pane 셸 아래 프로세스가 끝날 때까지 0.2초 간격으로 확인하고, 끝나면 바로 pane/탭을 닫는다. `stop_timeout`(기본 10초)이 지나면 그대로 닫는다(남은 프로세스는 pane과 함께 종료).
-- Spring Boot graceful shutdown처럼 오래 걸리는 서비스는 `stop_timeout`을 늘린다.
-- Windows `.bat`가 Ctrl+C 후 "일괄 작업을 끝내시겠습니까 (Y/N)?"를 묻는 상태는 이미 끝난 것으로 본다.
+- After sending Ctrl+C, the plugin checks every 0.2 seconds whether the process beneath the pane shell has exited. It closes the pane/tab as soon as it exits, or after `stop_timeout` (default: 10 seconds). Remaining processes are terminated with the pane.
+- Increase `stop_timeout` for services that need more time for a graceful shutdown, such as Spring Boot.
+- A Windows `.bat` file waiting at "Terminate batch job (Y/N)?" after Ctrl+C is treated as stopped.
 
-## 6. 대시보드
+## 6. Dashboard
 
-`panel` 액션을 실행하면 현재 pane 오른쪽에 대시보드 pane이 열린다. 서비스 탭과는 별개의 pane이라, 작업하던 탭에서 서비스를 보면서 조작할 수 있다. 같은 프로젝트의 대시보드가 이미 열려 있으면 새로 열지 않고 그쪽으로 이동한다.
+Run the `panel` action to open the dashboard in a pane to the right of the current pane. The dashboard is separate from the service tab, so you can keep working while managing the services. If a dashboard for the same project is already open, the action focuses it instead of opening another one.
 
 ```text
- ▣ devrun · my-project                                  2/3 실행
+ ▣ devrun · my-project                                  2/3 running
 
-   상태       서비스                                     포트
- ▸ ● 실행 중  backend                                    :8080
-   ◐ 시작 중  frontend                                   :5173
-   ○ 중지     worker
+   Status      Service                                    Port
+ ▸ ● Running   backend                                    :8080
+   ◐ Starting  frontend                                   :5173
+   ○ Stopped   worker
 
-  ■ 중지   ↻ 재시작   전체 시작   전체 중지   브라우저   설정   닫기
+  ■ Stop   ↻ Restart   Start all   Stop all   Browser   Settings   Close
 
-─ 로그 · backend ──────────────────────────────────────────────
+─ Logs · backend ──────────────────────────────────────────────
  Started Application in 4.2 seconds
 ```
 
-### 상태
+### Status
 
-| 표시 | 의미 | 판단 기준 |
+| Indicator | Meaning | Detection |
 |---|---|---|
-| ● 실행 중 | 동작 중 | pane 셸 아래에 실행 중인 프로세스가 있고, `port`가 열려 있음 (`port`가 없으면 프로세스만 확인) |
-| ◐ 시작 중 | 뜨는 중 | 프로세스는 있지만 `port`가 아직 안 열림 |
-| ✕ 종료됨 | 명령이 끝남 | pane은 있지만 셸만 남음. 실패했거나 끝난 경우라 로그를 확인한다 |
-| ○ 중지 | 안 떠 있음 | pane 없음 |
-| ◔ 대기 중 | 전체 시작에서 `depends_on`을 기다리는 중 | |
-| … 처리 중 | 대시보드가 시작·중지하는 중 | |
+| ● Running | Active | A process is running under the pane shell and, if configured, `port` is open. Without a port, only the process is checked |
+| ◐ Starting | Starting up | A process exists, but the configured `port` is not open yet |
+| ✕ Exited | Command finished | The pane remains, but only its shell is running. Check the logs for failure or completion |
+| ○ Stopped | Not running | No pane exists |
+| ◔ Waiting | Waiting for `depends_on` during start-all | |
+| … Working | Dashboard is starting or stopping a service | |
 
-### 조작
+### Controls
 
-| 하고 싶은 것 | 마우스 | 키 |
+| Goal | Mouse | Key |
 |---|---|---|
-| 서비스 선택 | 행 클릭, 휠 | `↑` `↓` `Home` `End` |
-| 선택한 서비스 시작/중지 | 행 더블클릭, `▶ 시작`/`■ 중지` 버튼 | `Enter` |
-| 선택한 서비스 재시작 | `↻ 재시작` 버튼 | `r` |
-| 전체 시작 / 전체 중지 | 버튼 | `a` / `x` |
-| 브라우저로 열기 (`url`) | `브라우저` 버튼 | `o` |
-| 설정 파일 열기 | `설정` 버튼 | `e` |
-| 대시보드 닫기 | `닫기` 버튼 | `q`, `Esc`, `Ctrl+C` |
+| Select a service | Click a row or use the wheel | `↑` `↓` `Home` `End` |
+| Start/stop selected service | Double-click a row or use the Start/Stop button | `Enter` |
+| Restart selected service | Restart button | `r` |
+| Start all / stop all | Buttons | `a` / `x` |
+| Open the service URL | Browser button | `o` |
+| Open the configuration file | Settings button | `e` |
+| Close dashboard | Close button | `q`, `Esc`, `Ctrl+C` |
 
-- 한/영 상태가 한글이어도 단축키가 동작한다(ㄱ=r, ㅁ=a, ㅌ=x, ㅐ=o, ㄷ=e, ㅂ=q).
-- 상태와 로그 미리보기는 1초마다 갱신된다. 로그는 선택한 서비스 pane의 최근 출력이며, pane 폭에서 접힌 줄도 원래 한 줄로 보여 준다.
-- 전체 시작은 기다리는 동안에도 선택·스크롤 같은 입력을 받는다. 진행 중에 전체 중지를 누르면 남은 시작을 취소한다.
-- 서비스가 많아 화면을 넘으면 선택한 행을 따라 목록이 스크롤되고, 위아래에 `▲ n more` / `▼ n more`가 보인다.
-- 폭이 좁으면 40칸 미만에서 포트 열을, 30칸 미만에서 상태 이름을 숨기고 아이콘만 보인다.
-- 예상하지 못한 오류가 나도 대시보드는 닫히지 않고 아래 줄에 요약을 보여 준다. 자세한 내용은 상태 폴더의 `panel.log`에 남는다.
-- 설정 파일을 저장하면 자동으로 다시 읽는다. 형식이 틀리면 아래 줄에 오류를 띄우고 이전 설정을 유지한다.
-- 설정 파일은 OS 기본 프로그램으로 연다(Windows: 연결 프로그램, 없으면 메모장 / macOS: `open` / Linux: `xdg-open`).
-- 서비스 하나를 중지하면 그 pane만 닫는다. 마지막 서비스를 중지하면 서비스 탭도 닫는다.
-- 재시작은 pane을 닫고 새로 연다. Windows의 `gradlew.bat` 같은 배치 파일은 Ctrl+C 후 "일괄 작업을 끝내시겠습니까?"를 묻기 때문에, 같은 pane에서 다시 실행하지 않는다.
-- 대시보드를 닫아도 서비스는 계속 돈다.
+- Shortcuts also work while a Korean keyboard layout is active (`ㄱ=r`, `ㅁ=a`, `ㅌ=x`, `ㅐ=o`, `ㄷ=e`, `ㅂ=q`).
+- Status and log previews refresh every second. The log preview shows the selected service's recent output; wrapped pane lines are displayed as their original single lines.
+- Start-all accepts input while it waits. Selecting Stop all during startup cancels remaining starts.
+- If the service list exceeds the screen, it scrolls with the selected row and shows `▲ n more` / `▼ n more` indicators.
+- At widths below 40 columns, the port column is hidden; below 30 columns, status names are replaced by icons.
+- Unexpected errors do not close the dashboard. A summary appears on the message line, with details in `panel.log` in the state directory.
+- Saving the configuration reloads it automatically. If it is invalid, an error appears and the previous configuration remains active.
+- The configuration opens with the OS default application (Windows: file association, or Notepad; macOS: `open`; Linux: `xdg-open`).
+- Stopping a service closes only its pane. Stopping the last service also closes the service tab.
+- Restart closes and recreates the pane. Windows batch files such as `gradlew.bat` may prompt "Terminate batch job?" after Ctrl+C, so the command is not run again in the same pane.
+- Closing the dashboard does not stop services.
 
-## 7. 예시
+## 7. Examples
 
-### Spring Boot (Gradle 멀티 모듈) + React (pnpm 모노레포)
+### Spring Boot (Gradle multi-module) + React (pnpm monorepo)
 
 ```json
 {
@@ -270,7 +274,7 @@ herdr server reload-config  # 실행 중인 서버에 반영
 }
 ```
 
-### 백엔드 여러 개 + 프론트 하나
+### Multiple backends and a frontend
 
 ```json
 {
@@ -282,21 +286,23 @@ herdr server reload-config  # 실행 중인 서버에 반영
 }
 ```
 
-배치: `api`는 왼쪽, 오른쪽에는 위에서부터 `batch`, `web` 순서로 놓인다.
+Layout: `api` is on the left; `batch` and `web` are stacked from top to bottom on the right.
 
-### Spring Boot 인자 넘기기
+### Passing arguments to Spring Boot
 
 ```json
 { "name": "api", "command": "./gradlew bootRun --args=\"--server.port=8081\"", "port": 8081 }
 ```
 
-## 8. 수동 실행 (herdr 액션 없이)
+## 8. Manual run (without herdr actions)
 
 ```sh
-# 플러그인 폴더에서. Windows 는 python, Linux/macOS 는 python3
-python -X utf8 src/devrun.py up --dir <프로젝트 폴더>     # up / down / restart / init
-python -X utf8 src/panel.py --dir <프로젝트 폴더>         # 대시보드를 지금 터미널에서 바로 실행
+# From the plugin folder. Windows: python; Linux/macOS: python3
+python -X utf8 src/devrun.py up --dir <project-folder>     # up / down / restart / init
+python -X utf8 src/panel.py --dir <project-folder>         # Run the dashboard in the current terminal
 ```
 
-- 코드를 고친 뒤 확인하거나, 액션이 실패한 원인을 콘솔에서 바로 볼 때 쓴다. herdr CLI가 서버에 연결해야 하므로 herdr 안의 pane에서 실행한다.
-- 수동 실행 상태는 Windows `%LOCALAPPDATA%\herdr-devrun`, Linux/macOS `~/.local/state/herdr-devrun`(또는 `$XDG_STATE_HOME/herdr-devrun`)에 저장된다. 액션 실행 상태(`HERDR_PLUGIN_STATE_DIR`)와 따로 관리되므로, 수동으로 띄운 것은 수동 `down`으로 내린다.
+- Use this to test code changes or inspect action failures directly in the console. herdr CLI must be able to connect to the server, so run it from a pane inside herdr.
+- Manual-run state is stored in `%LOCALAPPDATA%\herdr-devrun` on Windows, or `~/.local/state/herdr-devrun` (or `$XDG_STATE_HOME/herdr-devrun`) on Linux/macOS. This is separate from action state (`HERDR_PLUGIN_STATE_DIR`); stop manually started services with a manual `down`.
+
+For design details, see [architecture.md](architecture.md). For common problems, see [troubleshooting.md](troubleshooting.md).
