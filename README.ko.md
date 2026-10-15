@@ -8,6 +8,20 @@
 - Python 3.8 이상, 표준 라이브러리만 사용
 - herdr 0.9.0 이상
 
+```text
+ ▣ devrun · my-project                                  2/3 실행
+
+   상태       서비스                                     포트
+ ▸ ● 실행 중  backend                                    :8080
+   ◐ 시작 중  frontend                                   :5173
+   ○ 중지     worker
+
+  ■ 중지   ↻ 재시작   전체 시작   전체 중지   브라우저   설정   닫기
+
+─ 로그 · backend ──────────────────────────────────────────────
+ Started Application in 4.2 seconds
+```
+
 ## 설치
 
 ```sh

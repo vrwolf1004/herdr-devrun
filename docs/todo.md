@@ -23,7 +23,7 @@
 ## 낮음
 
 - [x] 11. 자동 테스트 추가(`unittest`, GitHub Actions)
-- [ ] 12. LICENSE, GitHub topic `herdr-plugin` — LICENSE(MIT) 추가됨, topic 은 GitHub 화면에서 직접 설정 필요
+- [x] 12. LICENSE, GitHub topic `herdr-plugin` — LICENSE(MIT) 추가, 저장소 공개 전환 후 topic 설정(GitHub 화면)
 - [x] 13. 버전 태그(`v0.3.0`)
 - [x] 14. 실행되지 않는 코드 정리(`term.py` `InterruptedError`)
 - [x] 15. 설정 파일 실행 관련 보안 안내

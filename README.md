@@ -8,6 +8,20 @@ A herdr plugin for starting and managing a project's development services in sep
 - Python 3.8+; standard library only
 - herdr 0.9.0+
 
+```text
+ ▣ devrun · my-project                                  2/3 running
+
+   Status      Service                                    Port
+ ▸ ● Running   backend                                    :8080
+   ◐ Starting  frontend                                   :5173
+   ○ Stopped   worker
+
+  ■ Stop   ↻ Restart   Start all   Stop all   Browser   Settings   Close
+
+─ Logs · backend ──────────────────────────────────────────────
+ Started Application in 4.2 seconds
+```
+
 ## Install
 
 ```sh
