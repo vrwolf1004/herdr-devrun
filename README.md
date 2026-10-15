@@ -59,9 +59,9 @@ herdr는 액션 id 중복을 허용하지 않아, Windows용 id에는 `-windows`
  Started Application in 4.2 seconds
 ```
 
-- 상태: ● 실행 중 / ◐ 시작 중(`port` 대기) / ✕ 종료됨(명령이 끝남) / ○ 중지 / … 처리 중
+- 상태: ● 실행 중 / ◐ 시작 중(`port` 대기) / ✕ 종료됨(명령이 끝남) / ○ 중지 / ◔ 대기 중(`depends_on` 대기) / … 처리 중
 - 마우스: 행 클릭 선택, 행 더블클릭 시작·중지, 버튼 클릭, 휠로 선택 이동
-- 키: `↑↓` 선택, `Enter` 시작·중지, `r` 재시작, `a` 전체 시작, `x` 전체 중지, `o` 브라우저, `e` 설정 열기, `q`/`Esc` 닫기
+- 키: `↑↓` 선택, `Enter` 시작·중지, `r` 재시작, `a` 전체 시작, `x` 전체 중지, `o` 브라우저, `e` 설정 열기, `q`/`Esc` 닫기 (한글 자판 상태에서도 동작)
 - 선택한 서비스의 로그 끝부분을 1초마다 갱신하고, 설정 파일을 저장하면 자동으로 다시 읽습니다.
 
 ## 표시 언어
@@ -107,9 +107,10 @@ description = "devrun: stop services"
       "command_windows": ".\\gradlew.bat :app-api:bootRun",
       "port": 8080,
       "url": "http://localhost:8080/swagger-ui.html",
-      "env": { "SPRING_PROFILES_ACTIVE": "local" }
+      "env": { "SPRING_PROFILES_ACTIVE": "local" },
+      "stop_timeout": 20
     },
-    { "name": "frontend", "cwd": "frontend", "command": "pnpm --filter web run dev", "port": 5173, "url": "http://localhost:5173" }
+    { "name": "frontend", "cwd": "frontend", "command": "pnpm --filter web run dev", "port": 5173, "url": "http://localhost:5173", "depends_on": ["backend"] }
   ]
 }
 ```
@@ -122,10 +123,15 @@ description = "devrun: stop services"
 | `services[].command_windows` / `command_unix` | | 해당 OS에서 `command` 대신 쓸 명령 |
 | `services[].cwd` | | 설정 파일 기준 상대 경로. 없으면 프로젝트 루트 |
 | `services[].env` | | pane 프로세스에 넣을 환경변수 |
-| `services[].port` | | 이 포트가 열리면 "실행 중", 아니면 "시작 중" |
+| `services[].port` | | 이 포트가 열리면 "실행 중", 아니면 "시작 중". 시작 전에 이미 쓰이고 있으면 시작하지 않음 |
 | `services[].url` | | 대시보드 "브라우저" 버튼으로 열 주소 |
+| `services[].depends_on` | | 먼저 준비돼야 하는 서비스 이름 목록 (전체 시작 순서) |
+| `services[].start_timeout` | | `depends_on`을 기다리는 최대 초 (기본 120) |
+| `services[].stop_timeout` | | 중지 시 프로세스 종료를 기다리는 최대 초 (기본 10) |
 
 배치: 첫 서비스는 왼쪽, 두 번째는 오른쪽, 세 번째부터는 오른쪽 아래로 쌓입니다. 암호화 키 같은 비밀값은 `env`에 적지 말고 OS 환경변수로 두세요.
+
+> **보안 주의**: `command`는 그대로 셸에 입력됩니다. 남의 저장소를 받아 `up`을 실행하면 그 저장소가 정한 명령이 실행됩니다(npm scripts, Makefile과 같은 성격). 처음 받은 저장소는 실행 전에 `.herdr-devrun.json` 내용을 확인하세요.
 
 ## 수동 실행 / 디버깅
 
@@ -139,5 +145,17 @@ herdr plugin log list --plugin herdr-devrun       # 액션 실행 결과(stderr)
 
 ## 주의
 
-- `down`과 서비스 중지는 Ctrl+C 후 1.5초 기다렸다가 pane/탭을 닫습니다. 닫히면 pane 안의 프로세스도 종료됩니다.
+- `down`과 서비스 중지는 Ctrl+C 후 프로세스가 끝나기를 최대 `stop_timeout`초 기다렸다가 pane/탭을 닫습니다. 닫히면 pane 안의 프로세스도 종료됩니다.
 - Linux/macOS 경로(입력 처리, 프로세스 조회)는 코드와 단위 테스트까지만 확인했고, 실제 herdr 환경에서는 아직 실행해 보지 않았습니다.
+
+## 개발
+
+```sh
+python -m unittest discover -s tests     # herdr 없이 도는 단위 테스트
+```
+
+push하면 GitHub Actions가 Windows/Ubuntu/macOS × Python 3.8/3.12에서 같은 테스트를 돌립니다.
+
+## 라이선스
+
+[MIT](LICENSE)

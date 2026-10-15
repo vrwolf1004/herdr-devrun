@@ -30,7 +30,13 @@ herdr plugin log list --plugin herdr-devrun
 | 대시보드에서 "✕ 종료됨" | 명령이 끝났거나 실패함 (셸만 남음) | 로그 미리보기 또는 서비스 탭에서 오류를 확인하고 `↻ 재시작` |
 | 대시보드 마우스 클릭이 안 먹음 | herdr 마우스 캡처가 꺼져 있거나, 클릭이 herdr 쪽에서 처리됨 | 키보드로 조작한다. herdr 설정의 `ui.mouse_capture`를 확인한다 |
 | 대시보드 열 정렬이 어긋남 | 폭이 애매한 기호(●, ◐ 등)를 터미널 글꼴이 2칸으로 그림 | 터미널 글꼴을 바꾸거나 `panel.py`의 `STATUS_VIEW` 아이콘을 ASCII로 바꾼다 |
-| 대시보드가 바로 닫힘 | `DEVRUN_PROJECT` 폴더에 설정 파일이 없음, 또는 시작 중 예외 | 수동 실행(`python -X utf8 src/panel.py --dir <프로젝트>`)으로 오류 메시지를 본다 |
+| 대시보드가 바로 닫힘 | `DEVRUN_PROJECT` 폴더에 설정 파일이 없음, 또는 시작 중 예외 | 상태 폴더의 `panel.log`를 보거나, 수동 실행(`python -X utf8 src/panel.py --dir <프로젝트>`)으로 오류 메시지를 본다 |
+| 대시보드 아래 줄에 `Unexpected error: ... (details: ...panel.log)` | 예상하지 못한 예외. 대시보드는 계속 돈다 | 메시지의 `panel.log` 경로에서 traceback을 확인한다. 같은 오류가 반복되면 그 내용으로 이슈를 남긴다 |
+| `port N is already in use by another process` / 전체 시작에서 `(port in use)` | 다른 프로세스(이전에 띄운 서버, IDE 실행 등)가 그 포트를 쓰는 중 | 위 "포트가 계속 사용 중" 방법으로 프로세스를 찾아 끄거나, 그 서버를 그대로 쓸 거라면 무시한다(의존 대상으로는 준비된 것으로 본다) |
+| 전체 시작에서 `(dependency failed)` | `depends_on` 대상이 끝나 버림(✕ 종료됨) | 의존 대상 서비스의 로그에서 실패 원인을 고친 뒤 다시 전체 시작 |
+| 전체 시작에서 `(timed out waiting for dependencies)` | `start_timeout` 안에 의존 대상의 `port`가 열리지 않음 | 의존 대상의 `port`가 맞는지 확인하고, 느리게 뜨는 서비스면 `start_timeout`을 늘린다 |
+| 서비스 중지가 오래 걸림 | Ctrl+C 후 프로세스가 끝나지 않아 `stop_timeout`(기본 10초)까지 기다림 | 정상 종료가 느린 서비스면 그대로 둔다. Ctrl+C를 무시하는 서비스면 `stop_timeout`을 줄인다 |
+| `depends_on has a cycle` / `unknown service` | 순환 의존 또는 없는 이름 | 메시지에 나온 경로(`a → b → a`)나 이름을 고친다 |
 | 대시보드를 닫은 뒤 터미널 입력이 이상함 (Linux/macOS) | 비정상 종료로 raw 모드가 복구되지 않음 | 그 pane에서 `reset` 또는 `stty sane`을 입력한다 |
 | 액션 목록에 안 보임 | link/install 안 됨, disabled, herdr 버전이 0.9.0 미만 | `herdr plugin list`, `herdr plugin enable herdr-devrun`, `herdr --version` 확인 |
 
@@ -39,6 +45,7 @@ herdr plugin log list --plugin herdr-devrun
 ```sh
 # 플러그인 폴더에서. Windows 는 python, Linux/macOS 는 python3
 python -m py_compile src/*.py            # 문법 검사
+python -m unittest discover -s tests     # 자동 테스트 (herdr 없이 돈다)
 
 # 무해한 명령으로 동작 확인 (설정 파일 command 를 ping, python -m http.server 등으로)
 python -X utf8 src/devrun.py up --dir <샘플 폴더>
@@ -48,4 +55,5 @@ python -X utf8 src/devrun.py down --dir <샘플 폴더>
 
 - `link`로 등록했다면 herdr 재시작 없이 다음 액션 실행부터 수정 내용이 반영된다.
 - `herdr-plugin.toml`(액션 추가 등)을 고쳤다면 `herdr plugin unlink herdr-devrun` → `herdr plugin link <플러그인 폴더>`로 다시 등록한다.
-- Linux/macOS 입력 해석(`term._UnixTerminal._parse`)은 순수 로직이라 어느 OS에서든 바이트 문자열을 넣어 확인할 수 있다.
+- Linux/macOS 입력 해석(`term._UnixTerminal._parse`)은 순수 로직이라 어느 OS에서든 테스트로 확인한다(`tests/test_term.py`).
+- 문구를 추가하면 `src/locales/*.json` 7개 모두에 같은 키를 넣는다. `tests/test_i18n.py`가 키와 `{자리표시}`가 언어마다 같은지 검사한다.
