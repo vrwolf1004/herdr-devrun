@@ -1,0 +1,99 @@
+id = "herdr-devrun"
+name = "herdr-devrun"
+version = "0.2.0"
+min_herdr_version = "0.9.0"
+platforms = ["windows", "linux", "macos"]
+description = "Run a project's dev services (backend, frontend, ...) in one tab from .herdr-devrun.json, with a dashboard pane"
+
+# Python 3.8+ 표준 라이브러리만 쓴다. 실행기 이름이 OS 마다 달라(Windows: python, Linux/macOS: python3)
+# 같은 동작을 OS 별로 선언한다. herdr 는 액션 id 중복을 허용하지 않으므로 Windows 쪽 id 에 -windows 를 붙인다.
+# 프로젝트 위치는 액션을 실행한 pane 의 cwd 에서 위로 올라가며 .herdr-devrun.json 을 찾는다.
+
+# ---------------------------------------------------------------- Linux / macOS
+
+[[actions]]
+id = "up"
+title = "devrun: start services"
+platforms = ["linux", "macos"]
+contexts = ["pane", "workspace"]
+command = ["python3", "-X", "utf8", "src/devrun.py", "up"]
+
+[[actions]]
+id = "down"
+title = "devrun: stop services"
+platforms = ["linux", "macos"]
+contexts = ["pane", "workspace"]
+command = ["python3", "-X", "utf8", "src/devrun.py", "down"]
+
+[[actions]]
+id = "restart"
+title = "devrun: restart services"
+platforms = ["linux", "macos"]
+contexts = ["pane", "workspace"]
+command = ["python3", "-X", "utf8", "src/devrun.py", "restart"]
+
+[[actions]]
+id = "panel"
+title = "devrun: open dashboard"
+platforms = ["linux", "macos"]
+contexts = ["pane", "workspace"]
+command = ["python3", "-X", "utf8", "src/devrun.py", "panel"]
+
+[[actions]]
+id = "init"
+title = "devrun: create .herdr-devrun.json"
+platforms = ["linux", "macos"]
+contexts = ["pane", "workspace"]
+command = ["python3", "-X", "utf8", "src/devrun.py", "init"]
+
+# panel 액션이 DEVRUN_PROJECT(프로젝트 폴더)를 넣어 연다.
+[[panes]]
+id = "panel"
+title = "devrun"
+platforms = ["linux", "macos"]
+placement = "split"
+command = ["python3", "-X", "utf8", "src/panel.py"]
+
+# ---------------------------------------------------------------- Windows
+
+[[actions]]
+id = "up-windows"
+title = "devrun: start services"
+platforms = ["windows"]
+contexts = ["pane", "workspace"]
+command = ["python", "-X", "utf8", "src/devrun.py", "up"]
+
+[[actions]]
+id = "down-windows"
+title = "devrun: stop services"
+platforms = ["windows"]
+contexts = ["pane", "workspace"]
+command = ["python", "-X", "utf8", "src/devrun.py", "down"]
+
+[[actions]]
+id = "restart-windows"
+title = "devrun: restart services"
+platforms = ["windows"]
+contexts = ["pane", "workspace"]
+command = ["python", "-X", "utf8", "src/devrun.py", "restart"]
+
+[[actions]]
+id = "panel-windows"
+title = "devrun: open dashboard"
+platforms = ["windows"]
+contexts = ["pane", "workspace"]
+command = ["python", "-X", "utf8", "src/devrun.py", "panel"]
+
+[[actions]]
+id = "init-windows"
+title = "devrun: create .herdr-devrun.json"
+platforms = ["windows"]
+contexts = ["pane", "workspace"]
+command = ["python", "-X", "utf8", "src/devrun.py", "init"]
+
+[[panes]]
+id = "panel-windows"
+title = "devrun"
+platforms = ["windows"]
+placement = "split"
+command = ["python", "-X", "utf8", "src/panel.py"]
