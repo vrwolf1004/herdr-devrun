@@ -17,6 +17,7 @@ import time
 from pathlib import Path
 
 import procs
+from i18n import t
 
 CONFIG_NAME = ".herdr-devrun.json"
 STOP_WAIT_SECONDS = 1.5
@@ -45,7 +46,7 @@ def herdr(*args, check=True):
         if not check:
             return None
         detail = (completed.stdout + completed.stderr).strip()
-        raise DevrunError(f"herdr {' '.join(map(str, args))} 실패: {detail}")
+        raise DevrunError(t("error.herdr_failed", command=" ".join(map(str, args)), detail=detail))
     output = completed.stdout.strip()
     if not output:
         return {}
@@ -78,7 +79,7 @@ def pane_id_of(result):
             return pane["pane_id"]
     if result.get("pane_id"):
         return result["pane_id"]
-    raise DevrunError(f"pane id 를 찾을 수 없습니다: {json.dumps(result, ensure_ascii=False)}")
+    raise DevrunError(t("error.pane_id_missing", result=json.dumps(result, ensure_ascii=False)))
 
 
 def tab_exists(tab_id):
@@ -99,7 +100,7 @@ def start_dir(explicit_dir=None):
     pane_id = os.environ.get("HERDR_PANE_ID")
     if pane_id:
         return Path(herdr("pane", "get", pane_id)["pane"]["cwd"]).resolve()
-    raise DevrunError("시작 폴더를 알 수 없습니다. pane 에서 실행하거나 --dir 를 지정하세요.")
+    raise DevrunError(t("error.start_dir_unknown"))
 
 
 def find_config_path(start):
@@ -107,23 +108,23 @@ def find_config_path(start):
         candidate = folder / CONFIG_NAME
         if candidate.is_file():
             return candidate
-    raise DevrunError(f"{CONFIG_NAME} 을 찾을 수 없습니다 ({start} 기준 상위 폴더 포함). devrun: init 으로 만드세요.")
+    raise DevrunError(t("error.config_not_found", config=CONFIG_NAME, start=start))
 
 
 def read_config(config_path):
     try:
         config = json.loads(config_path.read_text(encoding="utf-8-sig"))
     except json.JSONDecodeError as error:
-        raise DevrunError(f"{config_path} JSON 오류: {error}") from error
+        raise DevrunError(t("error.config_json", path=config_path, error=error)) from error
     services = config.get("services") or []
     if not services:
-        raise DevrunError(f"{config_path} 에 services 가 없습니다.")
+        raise DevrunError(t("error.config_no_services", path=config_path))
     names = set()
     for service in services:
         if not service.get("name") or not service_command(service):
-            raise DevrunError(f"{config_path} : 모든 service 에 name, command 가 필요합니다.")
+            raise DevrunError(t("error.config_missing_fields", path=config_path))
         if service["name"] in names:
-            raise DevrunError(f"{config_path} : service name 이 중복됩니다: {service['name']}")
+            raise DevrunError(t("error.config_duplicate_name", path=config_path, name=service["name"]))
         names.add(service["name"])
     return config
 
@@ -141,7 +142,7 @@ def tab_label(project_dir, config):
 def service_dir(project_dir, service):
     path = (project_dir / service["cwd"]) if service.get("cwd") else project_dir
     if not path.is_dir():
-        raise DevrunError(f"[{service['name']}] 폴더가 없습니다: {path}")
+        raise DevrunError(t("error.service_dir_missing", name=service["name"], path=path))
     return path.resolve()
 
 
@@ -329,16 +330,16 @@ def up(project_dir, config):
     state = read_state(project_dir)
     if started == 0:
         herdr("tab", "focus", state["tab_id"])
-        notify("devrun", f"이미 실행 중입니다: {state['label']}")
+        notify(t("notice.title"), t("notice.already_running", label=state["label"]))
         return
-    notify("devrun", f"{state['label']} : 서비스 {started}개 시작")
+    notify(t("notice.title"), t("notice.started", label=state["label"], count=started))
 
 
 def down(project_dir, quiet=False):
     state = live_state(project_dir, live_pane_ids())
     if not state:
         if not quiet:
-            notify("devrun", "실행 중인 서비스가 없습니다.")
+            notify(t("notice.title"), t("notice.nothing_running"))
         return
     # Ctrl+C 로 정상 종료 기회를 준 뒤 탭을 닫아 남은 프로세스를 정리한다.
     for pane in state["panes"]:
@@ -347,7 +348,7 @@ def down(project_dir, quiet=False):
     herdr("tab", "close", state["tab_id"])
     remove_state(project_dir)
     if not quiet:
-        notify("devrun", f"{state['label']} : 서비스 중지")
+        notify(t("notice.title"), t("notice.stopped", label=state["label"]))
 
 
 def _node_runner(folder):
@@ -385,7 +386,7 @@ _SKIP_FOLDERS = {"node_modules", "build", "dist", "target"}
 def init(project_dir):
     config_path = project_dir / CONFIG_NAME
     if config_path.exists():
-        notify("devrun", f"이미 있습니다: {config_path}")
+        notify(t("notice.title"), t("notice.config_exists", path=config_path))
         return
 
     folders = [project_dir] + sorted(
@@ -405,5 +406,5 @@ def init(project_dir):
 
     config = {"tab": project_dir.name, "services": services}
     config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    detail = f"서비스 {found}개 감지" if found else "감지된 서비스 없음, 예시로 채움"
-    notify("devrun", f"{config_path} 생성 ({detail}). 내용을 확인하세요.")
+    detail = t("notice.init_detected", count=found) if found else t("notice.init_example")
+    notify(t("notice.title"), t("notice.init_created", path=config_path, detail=detail))

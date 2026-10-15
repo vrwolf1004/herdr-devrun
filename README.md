@@ -11,6 +11,7 @@
 - [docs/usage.md](docs/usage.md): 설치, 단축키, 설정 파일 작성, 대시보드, 예시
 - [docs/architecture.md](docs/architecture.md): 모듈 구조, 실행 흐름, 상태 판정, OS별 처리, 구현 메모
 - [docs/troubleshooting.md](docs/troubleshooting.md): 증상별 원인과 해결, 수정 후 확인 방법
+- [docs/todo.md](docs/todo.md): 개선 할 일 목록
 
 ## 설치
 
@@ -62,6 +63,10 @@ herdr는 액션 id 중복을 허용하지 않아, Windows용 id에는 `-windows`
 - 마우스: 행 클릭 선택, 행 더블클릭 시작·중지, 버튼 클릭, 휠로 선택 이동
 - 키: `↑↓` 선택, `Enter` 시작·중지, `r` 재시작, `a` 전체 시작, `x` 전체 중지, `o` 브라우저, `e` 설정 열기, `q`/`Esc` 닫기
 - 선택한 서비스의 로그 끝부분을 1초마다 갱신하고, 설정 파일을 저장하면 자동으로 다시 읽습니다.
+
+## 표시 언어
+
+대시보드와 알림 문구는 `en`, `ko`, `ru`, `fr`, `es`, `de`, `ja`를 지원합니다. 기본적으로 Windows UI 언어 또는 Linux/macOS의 `LC_ALL`, `LC_MESSAGES`, `LANG`에서 언어를 감지하고, 지원하지 않는 언어면 영어를 사용합니다. 우선순위에 따라 `HERDR_DEVRUN_LANG` 환경변수 또는 플러그인 설정의 `config.json`에 `"lang"`을 지정해 덮어쓸 수 있습니다. 예: `HERDR_DEVRUN_LANG=ko`.
 
 ## 단축키 (herdr `config.toml`)
 

@@ -14,6 +14,7 @@ herdr plugin log list --plugin herdr-devrun
 
 | 증상 / 메시지 | 원인 | 해결 |
 |---|---|---|
+| 대시보드/알림 문구가 기대한 언어가 아님 | 언어 우선순위 설정 또는 OS 언어 감지 결과 | `HERDR_DEVRUN_LANG`이 최우선이다. 없으면 `HERDR_PLUGIN_CONFIG_DIR/config.json`의 `lang`, OS 언어(Windows UI 언어 또는 `LC_ALL` / `LC_MESSAGES` / `LANG`), 영어 순으로 결정된다. `ko-KR` 같은 로케일도 가능하며, 플러그인 언어를 바꾼 뒤 액션/대시보드를 다시 실행한다 |
 | 액션이 바로 실패, stderr에 `python`/`python3`를 찾을 수 없음 | Python이 PATH에 없음 | Windows는 `python`, Linux/macOS는 `python3`가 PATH에 있는지 확인한다. 설치 후 herdr 서버를 재시작한다 (`herdr server stop` → `herdr`) |
 | Windows에서 `python` 실행 시 Microsoft Store가 열림 | Store 별칭(App execution alias)만 있고 실제 Python이 없음 | python.org 설치본을 설치하고 PATH에 추가하거나, 설정 → 앱 실행 별칭에서 python 별칭을 끈다 |
 | `.herdr-devrun.json 을 찾을 수 없습니다` | 액션을 실행한 pane 폴더와 그 상위에 설정 파일이 없음 | 프로젝트 안의 pane에서 실행하거나 `init`으로 만든다. `herdr plugin action invoke`는 **포커스된 pane** 기준이다 |

@@ -20,23 +20,23 @@ import core
 import procs
 import term
 from core import Status
+from i18n import t
 
 REFRESH_SECONDS = 1.0
 INPUT_WAIT_SECONDS = 0.15
 MESSAGE_SECONDS = 5
 ESC = term.ESC
 
-# 상태 → (아이콘, 이름, 색 SGR). 모든 Status 를 빠짐없이 적는다 (아래 검사로 누락을 막는다).
+# 상태 → (아이콘, 번역 키, 색 SGR). 모든 Status 를 빠짐없이 적는다 (아래 검사로 누락을 막는다).
 STATUS_VIEW = {
-    Status.RUNNING: ("●", "실행 중", "32"),
-    Status.STARTING: ("◐", "시작 중", "33"),
-    Status.EXITED: ("✕", "종료됨", "31"),
-    Status.STOPPED: ("○", "중지", "90"),
-    Status.WORKING: ("…", "처리 중", "36"),
+    Status.RUNNING: ("●", "status.running", "32"),
+    Status.STARTING: ("◐", "status.starting", "33"),
+    Status.EXITED: ("✕", "status.exited", "31"),
+    Status.STOPPED: ("○", "status.stopped", "90"),
+    Status.WORKING: ("…", "status.working", "36"),
 }
-assert set(STATUS_VIEW) == set(Status), "STATUS_VIEW 에 빠진 Status 가 있습니다."
+assert set(STATUS_VIEW) == set(Status), "STATUS_VIEW is missing a Status"
 
-FOOTER_HELP = " ↑↓ 선택 · Enter 시작/중지 · r 재시작 · a/x 전체 시작/중지 · o 브라우저 · e 설정 · q 닫기"
 KEY_COMMANDS = {"enter": "toggle", "esc": "quit", "ctrl+c": "quit",
                 "r": "restart", "a": "start_all", "x": "stop_all", "o": "browser", "e": "config", "q": "quit"}
 
@@ -113,12 +113,12 @@ class Panel:
         try:
             self.config = core.read_config(self.config_path)
         except core.DevrunError as error:
-            self.set_message(f"설정 오류: {error}")
+            self.set_message(t("panel.config_error", error=error))
             return
         self.services = self.config["services"]
         self.selected = min(self.selected, max(0, len(self.services) - 1))
         if is_reload:
-            self.set_message("설정을 다시 읽었습니다.")
+            self.set_message(t("panel.config_reloaded"))
 
     def refresh(self):
         self.reload_config()
@@ -137,16 +137,17 @@ class Panel:
     def button_specs(self):
         service = self.selected_service()
         status = self.statuses.get(service["name"], Status.STOPPED) if service else Status.STOPPED
-        toggle = ("start", " ▶ 시작 ", "97;48;5;28") if status == Status.STOPPED else ("stop", " ■ 중지 ", "97;48;5;124")
-        return [
+        toggle = ("start", "97;48;5;28") if status == Status.STOPPED else ("stop", "97;48;5;124")
+        specs = [
             toggle,
-            ("restart", " ↻ 재시작 ", "97;48;5;24"),
-            ("start_all", " 전체 시작 ", "97;48;5;239"),
-            ("stop_all", " 전체 중지 ", "97;48;5;239"),
-            ("browser", " 브라우저 ", "97;48;5;239"),
-            ("config", " 설정 ", "97;48;5;239"),
-            ("quit", " 닫기 ", "97;48;5;239"),
+            ("restart", "97;48;5;24"),
+            ("start_all", "97;48;5;239"),
+            ("stop_all", "97;48;5;239"),
+            ("browser", "97;48;5;239"),
+            ("config", "97;48;5;239"),
+            ("quit", "97;48;5;239"),
         ]
+        return [(command, f" {t('panel.button.' + command)} ", sgr) for command, sgr in specs]
 
     def draw(self):
         width, height = term.size()
@@ -158,25 +159,28 @@ class Panel:
         # 제목 줄
         running = sum(1 for service in self.services if self.statuses.get(service["name"]) == Status.RUNNING)
         label = core.tab_label(self.project_dir, self.config) if self.config else self.project_dir.name
-        right = f" {running}/{len(self.services)} 실행 "
+        right = f" {t('panel.running_count', running=running, total=len(self.services))} "
         lines.append(style(fit(f" ▣ devrun · {label}", width - text_width(right)), "1;97;48;5;25")
                      + style(right, "97;48;5;25"))
         lines.append("")
 
-        # 서비스 목록
-        name_width = max(6, width - 3 - 11 - 8)
-        lines.append(style(fit("   상태       서비스", width - 8), "90") + style(fit("포트", 8), "90"))
+        # 서비스 목록. 열 폭은 언어마다 단어 길이가 달라 그때그때 계산한다.
+        status_width = max(text_width(f"{icon} {t(key)}") for icon, key, _ in STATUS_VIEW.values()) + 2
+        port_width = max(8, text_width(t("panel.header.port")) + 2)
+        name_width = max(6, width - 3 - status_width - port_width)
+        header = "   " + fit(t("panel.header.status"), status_width) + fit(t("panel.header.service"), name_width)
+        lines.append(style(header, "90") + style(fit(t("panel.header.port"), port_width), "90"))
         for index, service in enumerate(self.services):
-            icon, status_label, color = STATUS_VIEW[self.statuses.get(service["name"], Status.STOPPED)]
+            icon, label_key, color = STATUS_VIEW[self.statuses.get(service["name"], Status.STOPPED)]
             selected = index == self.selected
             background = ";48;5;236" if selected else ""
             port = f":{service['port']}" if service.get("port") else ""
             self.rows[len(lines)] = index
             lines.append(
                 style(" ▸ " if selected else "   ", f"1;96{background}")
-                + style(fit(f"{icon} {status_label}", 11), f"{color}{background}")
+                + style(fit(f"{icon} {t(label_key)}", status_width), f"{color}{background}")
                 + style(fit(service["name"], name_width), f"{'1;97' if selected else '97'}{background}")
-                + style(fit(port, 8), f"90{background}")
+                + style(fit(port, port_width), f"90{background}")
             )
         lines.append("")
 
@@ -195,11 +199,11 @@ class Panel:
 
         # 로그 미리보기
         service = self.selected_service()
-        log_title = f"─ 로그 · {service['name']} " if service else "─ 로그 "
+        log_title = f"─ {t('panel.log_title', name=service['name']) if service else t('panel.log_title_empty')} "
         lines.append(style(log_title + "─" * max(0, width - text_width(log_title)), "90"))
         log_height = max(0, height - len(lines) - 1)
         log_lines = self.log_lines[-log_height:] if log_height else []
-        for log_line in log_lines or ["(실행 중이 아닙니다)"]:
+        for log_line in log_lines or [t("panel.not_running")]:
             lines.append(style(fit(f" {log_line}", width), "37"))
         while len(lines) < height - 1:
             lines.append("")
@@ -208,7 +212,7 @@ class Panel:
         if self.message and time.monotonic() - self.message_at < MESSAGE_SECONDS:
             lines.append(style(fit(f" {self.message}", width), "1;93"))
         else:
-            lines.append(style(fit(FOOTER_HELP, width), "90"))
+            lines.append(style(fit(f" {t('panel.footer')}", width), "90"))
 
         frame = f"{ESC}[H" + "\r\n".join(f"{line}{ESC}[0m{ESC}[K" for line in lines[:height])
         term.write(frame)
@@ -232,25 +236,25 @@ class Panel:
                 self.execute("start" if self.statuses.get(service["name"]) == Status.STOPPED else "stop")
         elif command == "start":
             if service:
-                self.busy(f"{service['name']} 시작 중…", [service["name"]],
+                self.busy(t("panel.starting", name=service["name"]), [service["name"]],
                           lambda: core.start_service(self.project_dir, self.config, service))
-                self.set_message(f"{service['name']} 시작")
+                self.set_message(t("panel.started", name=service["name"]))
         elif command == "stop":
             if service:
-                self.busy(f"{service['name']} 중지 중…", [service["name"]],
+                self.busy(t("panel.stopping", name=service["name"]), [service["name"]],
                           lambda: core.stop_service(self.project_dir, service["name"]))
-                self.set_message(f"{service['name']} 중지")
+                self.set_message(t("panel.stopped", name=service["name"]))
         elif command == "restart":
             if service:
-                self.busy(f"{service['name']} 재시작 중…", [service["name"]],
+                self.busy(t("panel.restarting", name=service["name"]), [service["name"]],
                           lambda: core.restart_service(self.project_dir, self.config, service))
-                self.set_message(f"{service['name']} 재시작")
+                self.set_message(t("panel.restarted", name=service["name"]))
         elif command == "start_all":
-            self.busy("전체 시작 중…", all_names, self._start_all)
-            self.set_message("전체 시작")
+            self.busy(t("panel.starting_all"), all_names, self._start_all)
+            self.set_message(t("panel.started_all"))
         elif command == "stop_all":
-            self.busy("전체 중지 중…", all_names, lambda: core.down(self.project_dir, quiet=True))
-            self.set_message("전체 중지")
+            self.busy(t("panel.stopping_all"), all_names, lambda: core.down(self.project_dir, quiet=True))
+            self.set_message(t("panel.stopped_all"))
         elif command == "browser":
             self.open_browser(service)
         elif command == "config":
@@ -258,7 +262,7 @@ class Panel:
         elif command == "quit":
             self.running = False
         else:
-            raise core.DevrunError(f"알 수 없는 명령: {command}")
+            raise core.DevrunError(t("error.unknown_command", command=command))
 
     def _start_all(self):
         for service in self.services:
@@ -266,10 +270,10 @@ class Panel:
 
     def open_browser(self, service):
         if not service or not service.get("url"):
-            self.set_message("이 서비스에는 url 이 없습니다 (.herdr-devrun.json 의 url).")
+            self.set_message(t("panel.no_url"))
             return
         webbrowser.open(service["url"])
-        self.set_message(f"{service['url']} 열기")
+        self.set_message(t("panel.opened_url", url=service["url"]))
 
     def open_config(self):
         """OS 기본 프로그램으로 연다. Windows 에서 .json 연결 프로그램이 없으면 메모장."""
@@ -282,7 +286,7 @@ class Panel:
         else:
             opener = "open" if sys.platform == "darwin" else "xdg-open"
             subprocess.Popen([opener, path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        self.set_message("설정 파일을 열었습니다. 저장하면 자동으로 다시 읽습니다.")
+        self.set_message(t("panel.opened_config"))
 
     def move_selection(self, delta):
         if not self.services:
@@ -336,14 +340,14 @@ class Panel:
                 try:
                     self.execute(command)
                 except core.DevrunError as error:
-                    self.set_message(f"오류: {error}")
+                    self.set_message(t("panel.error", error=error))
                 if not self.running:
                     break
             if time.monotonic() - self.last_refresh >= REFRESH_SECONDS:
                 try:
                     self.refresh()
                 except core.DevrunError as error:
-                    self.set_message(f"상태 조회 오류: {error}")
+                    self.set_message(t("panel.refresh_error", error=error))
                 dirty = True
             if dirty and self.running:
                 self.draw()
@@ -351,11 +355,11 @@ class Panel:
 
 def main():
     parser = argparse.ArgumentParser(prog="devrun-panel")
-    parser.add_argument("--dir", help="프로젝트 폴더 (기본: DEVRUN_PROJECT)")
+    parser.add_argument("--dir", help=t("cli.panel_dir_help"))
     args = parser.parse_args()
     start = args.dir or os.environ.get("DEVRUN_PROJECT")
     if not start:
-        print("DEVRUN_PROJECT 또는 --dir 가 필요합니다.", file=sys.stderr)
+        print(t("cli.panel_dir_required"), file=sys.stderr)
         return 1
     try:
         config_path = core.find_config_path(Path(start).resolve())

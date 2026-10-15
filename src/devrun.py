@@ -17,6 +17,7 @@ import os
 import sys
 
 import core
+from i18n import t
 
 PLUGIN_ID = "herdr-devrun"
 # 매니페스트의 [[panes]] id. 액션 id 는 OS 별로 중복 선언할 수 없어 Windows 쪽에 -windows 를 붙였다.
@@ -52,18 +53,18 @@ def run(action, explicit_dir):
         core.read_config(config_path)
         open_panel(project_dir)
     else:
-        raise core.DevrunError(f"알 수 없는 액션: {action}")
+        raise core.DevrunError(t("error.unknown_action", action=action))
 
 
 def main():
     parser = argparse.ArgumentParser(prog="devrun")
     parser.add_argument("action", choices=["up", "down", "restart", "init", "panel"])
-    parser.add_argument("--dir", help="pane cwd 대신 쓸 시작 폴더")
+    parser.add_argument("--dir", help=t("cli.dir_help"))
     args = parser.parse_args()
     try:
         run(args.action, args.dir)
     except core.DevrunError as error:
-        core.notify("devrun 오류", str(error))
+        core.notify(t("notice.error_title"), str(error))
         print(error, file=sys.stderr)
         return 1
     return 0

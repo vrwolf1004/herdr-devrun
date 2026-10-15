@@ -30,6 +30,17 @@ herdr plugin link C:\work\app\herdrPlugin-devrun   # Linux/macOS 는 clone 한 �
 - 해제: `herdr plugin unlink herdr-devrun`(link) / `herdr plugin uninstall herdr-devrun`(install)
 - 일시 중지: `herdr plugin disable herdr-devrun` / 다시 사용: `herdr plugin enable herdr-devrun`
 
+## 표시 언어
+
+대시보드와 알림 문구는 `en`, `ko`, `ru`, `fr`, `es`, `de`, `ja`를 지원한다. 언어 결정 우선순위는 다음과 같다.
+
+1. 환경변수 `HERDR_DEVRUN_LANG`
+2. 플러그인 설정 파일 `HERDR_PLUGIN_CONFIG_DIR/config.json`의 `"lang"` 값
+3. OS 언어(Windows는 사용자 UI 언어, Linux/macOS는 `LC_ALL`, `LC_MESSAGES`, `LANG` 순서)
+4. 기본값 `en` (OS 언어를 지원하지 않거나 확인할 수 없을 때)
+
+예를 들어 `HERDR_DEVRUN_LANG=ko`로 설정하면 한글 문구를 사용한다. `ko-KR`, `ko_KR.UTF-8` 같은 로케일 표기도 인식한다. 환경변수나 플러그인 설정을 지정하면 OS 언어보다 우선하며, 번역에 없는 문구는 영어 번역으로 대체한다.
+
 ### 액션 id
 
 herdr는 액션 id 중복을 허용하지 않는다. 그래서 OS별 실행기(`python` / `python3`)에 맞춰 같은 동작을 두 번 선언하고 Windows 쪽 id에 `-windows`를 붙였다(herdr-file-viewer, herdr-sidebar와 같은 관례). 이 문서는 Linux/macOS id로 쓴다. **Windows에서는 뒤에 `-windows`를 붙인다.**

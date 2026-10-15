@@ -9,7 +9,8 @@ herdr-plugin.toml
 
 src/devrun.py ─┐
 src/panel.py ──┼─ src/core.py ─ src/procs.py   프로세스·포트 조회 (OS별)
-               └─ src/term.py                  터미널 입출력 (OS별)
+               ├─ src/term.py                  터미널 입출력 (OS별)
+               └─ src/i18n.py ─ src/locales/*.json  문구 번역
 
 src/core.py
   ├─ herdr CLI (HERDR_BIN_PATH)          탭·pane 생성, 명령 실행, 상태 조회, 알림
@@ -29,6 +30,7 @@ src/core.py
   - `DevrunError`: 사용자에게 그대로 보여 줄 오류. 액션은 알림 + stderr + exit 1, 대시보드는 아래 줄 메시지로 보여 준다.
 - `src/procs.py`: `child_process_map()`(부모 pid → 자식 프로세스 이름), `has_children()`, `is_listening()`.
 - `src/term.py`: `open_terminal()`이 OS에 맞는 터미널 객체를 돌려준다. `with` 블록 안에서 대체 화면과 입력 모드를 켜고, `read(timeout)`이 `Event` 목록을 돌려준다. `size()`, `write()`.
+- `src/i18n.py`: 언어 결정, 번역 파일 로드, `t(key, **values)` 문구 치환. 지원 언어는 `en`, `ko`, `ru`, `fr`, `es`, `de`, `ja`이며 문구는 `src/locales/<언어>.json`에 둔다.
 - `src/devrun.py`: 액션 진입점(argparse). 시작 폴더와 설정 파일을 찾아 `core` 함수를 부른다. `panel` 액션은 `herdr plugin pane open`으로 대시보드 pane을 연다.
 - `src/panel.py`: 대시보드. `Panel` 클래스가 화면 상태, 그리기, 입력 해석, 명령 실행을 맡는다.
 
@@ -84,7 +86,7 @@ herdr-sidebar 같은 다른 플러그인이 탭을 만들 때 pane을 자동으�
 | 상태 | 조건 |
 |---|---|
 | `STOPPED` | 상태 파일에 pane이 없음 (또는 pane이 사라짐) |
-| `EXITED` | pane은 있지만 셸(`shell_pid`)의 자식 프로세스가 없음 (`conhost.exe` 제외) |
+| `EXITED` | pane은 있지만 셸(`shell_pid`)의 직접 자식 프로세스가 없음 (`conhost.exe` 제외) |
 | `STARTING` | 자식 프로세스가 있지만 `port`에 연결되지 않음 |
 | `RUNNING` | 자식 프로세스가 있고 `port`에 연결됨 (`port`가 없으면 자식 프로세스만으로 판단) |
 | `WORKING` | 대시보드가 시작·중지를 처리하는 동안만 쓰는 화면용 상태 |
@@ -98,7 +100,7 @@ herdr-sidebar 같은 다른 플러그인이 탭을 만들 때 pane을 자동으�
 | Linux | `/proc/<pid>/stat`의 ppid (comm에 공백·괄호가 있을 수 있어 마지막 `)` 기준으로 자름) |
 | macOS | `ps -A -o pid=,ppid=,comm=` |
 
-- 포트는 `127.0.0.1`, `::1`에 0.05초 제한으로 TCP 연결해 본다. 표준 라이브러리에 LISTEN 목록 API가 없어서 OS 공통으로 이 방법을 쓴다.
+- 포트는 `127.0.0.1`, `::1`에 각각 0.05초 제한으로 TCP 연결해 본다. 표준 라이브러리에 LISTEN 목록 API가 없어서 OS 공통으로 이 방법을 쓴다. 포트 소유 프로세스가 서비스 자식인지까지는 확인하지 않는다.
 
 ## 대시보드 (`panel.py`)
 
@@ -152,5 +154,6 @@ with terminal:   입력 모드 변경 → 대체 화면, 커서 숨김
 - **인자 전달**: `subprocess`에 인자 목록을 넘긴다. 따옴표가 든 명령도 Windows `list2cmdline`이 알맞게 감싸므로 별도 이스케이프가 없다.
 - **pane id 위치**: `tab create`는 `result.root_pane.pane_id`, `pane split`은 `result.pane.pane_id`로 돌려준다. `pane_id_of()`가 둘 다 처리한다.
 - **환경변수**: `--env KEY=VALUE`는 pane에서 실행되는 셸 프로세스에 들어가므로, 그 셸에서 실행하는 서비스 명령이 물려받는다.
+- **언어**: `HERDR_DEVRUN_LANG` 환경변수 → `HERDR_PLUGIN_CONFIG_DIR/config.json`의 `lang` → OS 언어 → `en` 순서로 결정한다. Windows는 사용자 UI 언어, Linux/macOS는 `LC_ALL`, `LC_MESSAGES`, `LANG` 순서로 감지한다. 지원하지 않는 언어는 다음 단계로 넘어가고, 빠진 번역 키는 영어로 대체한다.
 - **플러그인 pane cwd**: `plugin pane open`에 `--cwd`를 주지 않으면 플러그인 폴더에서 실행된다. 매니페스트의 `src/panel.py` 상대 경로가 이것에 기대므로 `--cwd`를 넘기지 않는다.
 - **액션 id 중복 불가**: herdr 0.9.4는 플랫폼이 달라도 같은 액션 id를 거부한다(`duplicate_plugin_action_id`). 확장자 없는 상대 경로 명령(`bin/devrun`)은 Windows에서 찾지 못해, OS별 공용 실행 파일 방식도 쓸 수 없었다.
