@@ -66,5 +66,23 @@
   "panel.config_error": "設定エラー: {error}",
   "panel.config_reloaded": "設定を再読み込みしました。",
   "panel.error": "エラー: {error}",
-  "panel.refresh_error": "状態取得エラー: {error}"
+  "panel.refresh_error": "状態取得エラー: {error}",
+
+  "error.port_in_use": "{name}: ポート {port} はすでに別のプロセスが使用しています。",
+  "error.config_bad_stop_timeout": "{path}: {name} の stop_timeout は 0 以上の秒数 (数値) にしてください。",
+  "notice.panel_crashed": "エラーのためダッシュボードが終了しました。詳細: {log}",
+  "panel.unexpected_error": "予期しないエラー: {error} (詳細: {log})",
+
+  "status.waiting": "待機中",
+  "error.config_bad_start_timeout": "{path}: {name} の start_timeout は 0 以上の秒数 (数値) にしてください。",
+  "error.config_bad_depends_on": "{path}: {name} の depends_on はサービス名のリストにしてください。",
+  "error.config_unknown_dependency": "{path}: {name} が存在しないサービスに依存しています: {dependency}",
+  "error.config_dependency_cycle": "{path}: depends_on が循環しています: {cycle}",
+  "notice.not_started": "開始しなかったサービス: {details}",
+  "panel.started_all_partial": "すべて開始が完了しました。開始しなかったサービス: {details}",
+  "panel.more_above": "▲ ほか {count} 件",
+  "panel.more_below": "▼ ほか {count} 件",
+  "reason.port_in_use": "ポート使用中",
+  "reason.dependency_failed": "依存サービスが失敗",
+  "reason.timeout": "依存サービスの待機がタイムアウト"
 }

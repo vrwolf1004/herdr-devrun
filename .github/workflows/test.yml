@@ -1,0 +1,30 @@
+name: test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unittest:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+        python: ["3.8", "3.12"]
+        exclude:
+          - os: macos-latest   # Apple Silicon 러너에는 3.8 빌드가 없다
+            python: "3.8"
+        include:
+          - os: macos-13       # 3.8 은 Intel 러너에서 확인한다
+            python: "3.8"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: compile
+        run: python -m py_compile src/core.py src/devrun.py src/i18n.py src/panel.py src/procs.py src/term.py
+      - name: unittest
+        run: python -m unittest discover -s tests -v

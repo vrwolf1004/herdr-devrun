@@ -206,10 +206,9 @@ class _UnixTerminal(_Screen):
         if self._resized:
             self._resized = False
             events.append(Event("resize"))
-        try:
-            ready, _, _ = select.select([self._fd], [], [], timeout)
-        except InterruptedError:  # SIGWINCH 로 깨어난 경우
-            return events + [Event("resize")]
+        # SIGWINCH 가 와도 Python 3.5+ 는 select 를 자동으로 다시 실행한다(PEP 475).
+        # 크기 변경은 핸들러가 세운 _resized 로 다음 read 때 알린다.
+        ready, _, _ = select.select([self._fd], [], [], timeout)
         if ready:
             self._buffer += os.read(self._fd, 4096).decode("utf-8", errors="replace")
         events += self._parse()

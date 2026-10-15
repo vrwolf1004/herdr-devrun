@@ -66,5 +66,23 @@
   "panel.config_error": "Erreur de configuration : {error}",
   "panel.config_reloaded": "Configuration relue.",
   "panel.error": "Erreur : {error}",
-  "panel.refresh_error": "Erreur d'état : {error}"
+  "panel.refresh_error": "Erreur d'état : {error}",
+
+  "error.port_in_use": "{name} : le port {port} est déjà utilisé par un autre processus.",
+  "error.config_bad_stop_timeout": "{path} : stop_timeout de {name} doit être un nombre de secondes (0 ou plus).",
+  "notice.panel_crashed": "Le tableau de bord s'est arrêté à cause d'une erreur. Détails : {log}",
+  "panel.unexpected_error": "Erreur inattendue : {error} (détails : {log})",
+
+  "status.waiting": "En attente",
+  "error.config_bad_start_timeout": "{path} : start_timeout de {name} doit être un nombre de secondes (0 ou plus).",
+  "error.config_bad_depends_on": "{path} : depends_on de {name} doit être une liste de noms de services.",
+  "error.config_unknown_dependency": "{path} : {name} dépend d'un service inconnu : {dependency}",
+  "error.config_dependency_cycle": "{path} : depends_on contient un cycle : {cycle}",
+  "notice.not_started": "Non démarré : {details}",
+  "panel.started_all_partial": "Démarrage terminé. Non démarré : {details}",
+  "panel.more_above": "▲ {count} de plus",
+  "panel.more_below": "▼ {count} de plus",
+  "reason.port_in_use": "port utilisé",
+  "reason.dependency_failed": "échec d'une dépendance",
+  "reason.timeout": "délai d'attente des dépendances dépassé"
 }

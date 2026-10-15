@@ -66,5 +66,23 @@
   "panel.config_error": "Ошибка настроек: {error}",
   "panel.config_reloaded": "Настройки перечитаны.",
   "panel.error": "Ошибка: {error}",
-  "panel.refresh_error": "Ошибка получения статуса: {error}"
+  "panel.refresh_error": "Ошибка получения статуса: {error}",
+
+  "error.port_in_use": "{name}: порт {port} уже занят другим процессом.",
+  "error.config_bad_stop_timeout": "{path}: stop_timeout у {name} должен быть числом секунд (0 или больше).",
+  "notice.panel_crashed": "Панель остановлена из-за ошибки. Подробности: {log}",
+  "panel.unexpected_error": "Непредвиденная ошибка: {error} (подробности: {log})",
+
+  "status.waiting": "Ожидание",
+  "error.config_bad_start_timeout": "{path}: start_timeout у {name} должен быть числом секунд (0 или больше).",
+  "error.config_bad_depends_on": "{path}: depends_on у {name} должен быть списком имён сервисов.",
+  "error.config_unknown_dependency": "{path}: {name} зависит от неизвестного сервиса: {dependency}",
+  "error.config_dependency_cycle": "{path}: в depends_on есть цикл: {cycle}",
+  "notice.not_started": "Не запущено: {details}",
+  "panel.started_all_partial": "Запуск всех завершён. Не запущено: {details}",
+  "panel.more_above": "▲ ещё {count}",
+  "panel.more_below": "▼ ещё {count}",
+  "reason.port_in_use": "порт занят",
+  "reason.dependency_failed": "ошибка зависимости",
+  "reason.timeout": "истекло время ожидания зависимостей"
 }

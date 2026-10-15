@@ -66,5 +66,23 @@
   "panel.config_error": "Error de configuración: {error}",
   "panel.config_reloaded": "Configuración recargada.",
   "panel.error": "Error: {error}",
-  "panel.refresh_error": "Error de estado: {error}"
+  "panel.refresh_error": "Error de estado: {error}",
+
+  "error.port_in_use": "{name}: el puerto {port} ya está en uso por otro proceso.",
+  "error.config_bad_stop_timeout": "{path}: stop_timeout de {name} debe ser un número de segundos (0 o más).",
+  "notice.panel_crashed": "El panel se detuvo por un error. Detalles: {log}",
+  "panel.unexpected_error": "Error inesperado: {error} (detalles: {log})",
+
+  "status.waiting": "En espera",
+  "error.config_bad_start_timeout": "{path}: start_timeout de {name} debe ser un número de segundos (0 o más).",
+  "error.config_bad_depends_on": "{path}: depends_on de {name} debe ser una lista de nombres de servicios.",
+  "error.config_unknown_dependency": "{path}: {name} depende de un servicio desconocido: {dependency}",
+  "error.config_dependency_cycle": "{path}: depends_on tiene un ciclo: {cycle}",
+  "notice.not_started": "No iniciado: {details}",
+  "panel.started_all_partial": "Inicio completado. No iniciado: {details}",
+  "panel.more_above": "▲ {count} más",
+  "panel.more_below": "▼ {count} más",
+  "reason.port_in_use": "puerto en uso",
+  "reason.dependency_failed": "falló una dependencia",
+  "reason.timeout": "tiempo de espera de dependencias agotado"
 }

@@ -66,5 +66,23 @@
   "panel.config_error": "Konfigurationsfehler: {error}",
   "panel.config_reloaded": "Konfiguration neu geladen.",
   "panel.error": "Fehler: {error}",
-  "panel.refresh_error": "Statusfehler: {error}"
+  "panel.refresh_error": "Statusfehler: {error}",
+
+  "error.port_in_use": "{name}: Port {port} wird bereits von einem anderen Prozess verwendet.",
+  "error.config_bad_stop_timeout": "{path}: stop_timeout von {name} muss eine Zahl in Sekunden sein (0 oder mehr).",
+  "notice.panel_crashed": "Das Dashboard wurde wegen eines Fehlers beendet. Details: {log}",
+  "panel.unexpected_error": "Unerwarteter Fehler: {error} (Details: {log})",
+
+  "status.waiting": "Wartet",
+  "error.config_bad_start_timeout": "{path}: start_timeout von {name} muss eine Zahl in Sekunden sein (0 oder mehr).",
+  "error.config_bad_depends_on": "{path}: depends_on von {name} muss eine Liste von Dienstnamen sein.",
+  "error.config_unknown_dependency": "{path}: {name} hängt von einem unbekannten Dienst ab: {dependency}",
+  "error.config_dependency_cycle": "{path}: depends_on enthält einen Zyklus: {cycle}",
+  "notice.not_started": "Nicht gestartet: {details}",
+  "panel.started_all_partial": "Start abgeschlossen. Nicht gestartet: {details}",
+  "panel.more_above": "▲ {count} weitere",
+  "panel.more_below": "▼ {count} weitere",
+  "reason.port_in_use": "Port belegt",
+  "reason.dependency_failed": "Abhängigkeit fehlgeschlagen",
+  "reason.timeout": "Zeitlimit beim Warten auf Abhängigkeiten"
 }

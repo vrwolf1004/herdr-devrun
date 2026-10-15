@@ -66,5 +66,23 @@
   "panel.config_error": "설정 오류: {error}",
   "panel.config_reloaded": "설정을 다시 읽었습니다.",
   "panel.error": "오류: {error}",
-  "panel.refresh_error": "상태 조회 오류: {error}"
+  "panel.refresh_error": "상태 조회 오류: {error}",
+
+  "error.port_in_use": "{name} : {port} 포트를 이미 다른 프로세스가 쓰고 있습니다.",
+  "error.config_bad_stop_timeout": "{path} : {name} 의 stop_timeout 은 0 이상의 초(숫자)여야 합니다.",
+  "notice.panel_crashed": "오류로 대시보드가 종료됐습니다. 자세한 내용: {log}",
+  "panel.unexpected_error": "예상하지 못한 오류: {error} (자세한 내용: {log})",
+
+  "status.waiting": "대기 중",
+  "error.config_bad_start_timeout": "{path} : {name} 의 start_timeout 은 0 이상의 초(숫자)여야 합니다.",
+  "error.config_bad_depends_on": "{path} : {name} 의 depends_on 은 서비스 이름 목록이어야 합니다.",
+  "error.config_unknown_dependency": "{path} : {name} 이(가) 없는 서비스에 의존합니다: {dependency}",
+  "error.config_dependency_cycle": "{path} : depends_on 이 순환합니다: {cycle}",
+  "notice.not_started": "시작하지 않음: {details}",
+  "panel.started_all_partial": "전체 시작 완료. 시작하지 않음: {details}",
+  "panel.more_above": "▲ {count}개 더",
+  "panel.more_below": "▼ {count}개 더",
+  "reason.port_in_use": "포트 사용 중",
+  "reason.dependency_failed": "의존 서비스 실패",
+  "reason.timeout": "의존 서비스 대기 시간 초과"
 }

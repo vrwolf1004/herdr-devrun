@@ -20,13 +20,21 @@ import procs
 from i18n import t
 
 CONFIG_NAME = ".herdr-devrun.json"
-STOP_WAIT_SECONDS = 1.5
+STOP_TIMEOUT_SECONDS = 10   # 서비스별 stop_timeout 이 없을 때 종료를 기다리는 최대 시간
+STOP_POLL_SECONDS = 0.2
+START_TIMEOUT_SECONDS = 120  # 서비스별 start_timeout 이 없을 때 depends_on 준비를 기다리는 최대 시간
+START_POLL_SECONDS = 0.5
+STARTUP_GRACE_SECONDS = 5   # 막 띄운 서비스가 '종료됨'이어도 실패로 보지 않는 시간
 IS_WINDOWS = sys.platform == "win32"
 HERDR = os.environ.get("HERDR_BIN_PATH") or "herdr"
 
 
 class DevrunError(Exception):
     """사용자에게 그대로 보여 줄 오류."""
+
+
+class PortInUseError(DevrunError):
+    """시작하려는 서비스의 port 를 이미 다른 프로세스가 쓰고 있다."""
 
 
 # ---------------------------------------------------------------- herdr
@@ -126,7 +134,52 @@ def read_config(config_path):
         if service["name"] in names:
             raise DevrunError(t("error.config_duplicate_name", path=config_path, name=service["name"]))
         names.add(service["name"])
+        if not _is_seconds(service.get("stop_timeout", STOP_TIMEOUT_SECONDS)):
+            raise DevrunError(t("error.config_bad_stop_timeout", path=config_path, name=service["name"]))
+        if not _is_seconds(service.get("start_timeout", START_TIMEOUT_SECONDS)):
+            raise DevrunError(t("error.config_bad_start_timeout", path=config_path, name=service["name"]))
+        depends_on = service.get("depends_on", [])
+        if not isinstance(depends_on, list) or not all(isinstance(each, str) for each in depends_on):
+            raise DevrunError(t("error.config_bad_depends_on", path=config_path, name=service["name"]))
+    for service in services:
+        for dependency in service.get("depends_on", []):
+            if dependency not in names:  # 자기 자신에 의존하는 것은 아래 순환 검사가 잡는다
+                raise DevrunError(t("error.config_unknown_dependency", path=config_path,
+                                    name=service["name"], dependency=dependency))
+    cycle = _dependency_cycle(services)
+    if cycle:
+        raise DevrunError(t("error.config_dependency_cycle", path=config_path, cycle=" → ".join(cycle)))
     return config
+
+
+def _is_seconds(value):
+    return not isinstance(value, bool) and isinstance(value, (int, float)) and value >= 0
+
+
+def _dependency_cycle(services):
+    """depends_on 순환이 있으면 순환 경로(이름 목록), 없으면 None."""
+    graph = {service["name"]: service.get("depends_on", []) for service in services}
+    visiting, done = [], set()
+
+    def visit(name):
+        if name in done:
+            return None
+        if name in visiting:
+            return visiting[visiting.index(name):] + [name]
+        visiting.append(name)
+        for dependency in graph.get(name, []):
+            cycle = visit(dependency)
+            if cycle:
+                return cycle
+        visiting.pop()
+        done.add(name)
+        return None
+
+    for name in graph:
+        cycle = visit(name)
+        if cycle:
+            return cycle
+    return None
 
 
 def service_command(service):
@@ -167,10 +220,18 @@ def state_dir():
     return Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local" / "state")) / "herdr-devrun"
 
 
-def state_path(project_dir):
+def _project_key(project_dir):
     key = str(project_dir).lower() if IS_WINDOWS else str(project_dir)
-    digest = hashlib.sha1(key.encode("utf-8")).hexdigest()[:16]
-    return state_dir() / f"{digest}.json"
+    return hashlib.sha1(key.encode("utf-8")).hexdigest()[:16]
+
+
+def state_path(project_dir):
+    return state_dir() / f"{_project_key(project_dir)}.json"
+
+
+def panel_marker_path(project_dir):
+    """프로젝트의 대시보드 pane id 를 적어 두는 파일. 서비스 상태와 수명이 달라 따로 둔다."""
+    return state_dir() / f"{_project_key(project_dir)}.panel"
 
 
 def read_state(project_dir):
@@ -222,6 +283,7 @@ class Status(enum.Enum):
     STARTING = "starting"  # 프로세스는 돌지만 port 가 아직 안 열림
     RUNNING = "running"    # 프로세스가 돌고 port 가 열림 (port 미지정이면 프로세스만으로 판단)
     WORKING = "working"    # 대시보드가 시작·중지를 처리하는 중 (화면 표시용)
+    WAITING = "waiting"    # 전체 시작에서 depends_on 이 준비되기를 기다리는 중 (화면 표시용)
 
 
 def run_in_pane(pane_id, service):
@@ -238,6 +300,10 @@ def start_service(project_dir, config, service, focus=False):
     state = live_state(project_dir, live_pane_ids())
     if find_pane(state, service["name"]):
         return False
+    # 다른 프로세스가 이미 port 를 쓰고 있으면, 띄워도 충돌로 실패하는데 상태는 "실행 중"으로 보이므로 막는다.
+    port = service.get("port")
+    if port and procs.is_listening(int(port)):
+        raise PortInUseError(t("error.port_in_use", name=service["name"], port=port))
 
     folder = service_dir(project_dir, service)
     # 서비스 pane 을 모두 손으로 닫아 다른 플러그인 pane 만 남은 탭은 버리고 새로 만든다.
@@ -264,7 +330,37 @@ def start_service(project_dir, config, service, focus=False):
     return True
 
 
-def stop_service(project_dir, name):
+def stop_timeout(service):
+    return float(service.get("stop_timeout", STOP_TIMEOUT_SECONDS)) if service else STOP_TIMEOUT_SECONDS
+
+
+def shell_pid(pane_id):
+    info = herdr("pane", "process-info", "--pane", pane_id, check=False) or {}
+    pid = (info.get("process_info") or {}).get("shell_pid")
+    return int(pid) if pid else None
+
+
+def interrupt_and_wait(panes):
+    """[(pane_id, 최대 대기 초)] 에 Ctrl+C 를 보내고, 셸 아래 프로세스가 끝날 때까지 기다린다.
+
+    pane 마다 최대 시간이 지나면 더 기다리지 않는다. 끝나지 않은 프로세스는 pane/탭을 닫을 때 함께 종료된다.
+    """
+    now = time.monotonic()
+    pending = {}
+    for pane_id, timeout in panes:
+        pid = shell_pid(pane_id)
+        herdr("pane", "send-keys", pane_id, "ctrl+c", check=False)
+        if pid:
+            pending[pid] = now + timeout
+    while pending:
+        time.sleep(STOP_POLL_SECONDS)
+        child_map = procs.child_process_map()
+        now = time.monotonic()
+        pending = {pid: deadline for pid, deadline in pending.items()
+                   if deadline > now and procs.has_running_children(child_map, pid)}
+
+
+def stop_service(project_dir, name, timeout=STOP_TIMEOUT_SECONDS):
     """Ctrl+C 로 정상 종료 기회를 준 뒤 pane 을 닫는다. 마지막 서비스면 탭도 닫는다.
 
     떠 있지 않으면 False.
@@ -274,8 +370,7 @@ def stop_service(project_dir, name):
     if not pane:
         return False
 
-    herdr("pane", "send-keys", pane["pane_id"], "ctrl+c", check=False)
-    time.sleep(STOP_WAIT_SECONDS)
+    interrupt_and_wait([(pane["pane_id"], timeout)])
     state["panes"] = [each for each in state["panes"] if each["name"] != name]
     if state["panes"]:
         herdr("pane", "close", pane["pane_id"])
@@ -292,18 +387,26 @@ def restart_service(project_dir, config, service):
     Windows 의 .bat(gradlew 등)는 Ctrl+C 후 "일괄 작업을 끝내시겠습니까 (Y/N)?" 를 물어
     입력 상태가 불확실해지기 때문이다.
     """
-    stop_service(project_dir, service["name"])
+    stop_service(project_dir, service["name"], stop_timeout(service))
     start_service(project_dir, config, service)
 
 
-def service_status(service, state, child_map):
+def service_status(service, state, child_map, pid_cache=None):
+    """pid_cache(pane id → 셸 pid)를 주면 pane 마다 herdr process-info 를 다시 묻지 않는다.
+
+    pane 이 살아 있는 동안 셸 pid 는 바뀌지 않는다.
+    """
     pane = find_pane(state, service["name"])
     if not pane:
         return Status.STOPPED
     # herdr process-info 의 foreground 는 Windows 에서 셸만 돌려주므로, 셸의 자식으로 실행 여부를 본다.
-    info = herdr("pane", "process-info", "--pane", pane["pane_id"], check=False) or {}
-    shell_pid = (info.get("process_info") or {}).get("shell_pid")
-    if not shell_pid or not procs.has_children(child_map, int(shell_pid)):
+    pane_id = pane["pane_id"]
+    pid = pid_cache.get(pane_id) if pid_cache is not None else None
+    if pid is None:
+        pid = shell_pid(pane_id)
+        if pid_cache is not None and pid:
+            pid_cache[pane_id] = pid
+    if not pid or not procs.has_running_children(child_map, pid):
         return Status.EXITED
     port = service.get("port")
     if port and not procs.is_listening(int(port)):
@@ -312,39 +415,121 @@ def service_status(service, state, child_map):
 
 
 def service_log(state, name, lines):
+    """서비스 pane 의 최근 출력. pane 폭에서 접힌 줄은 원래 한 줄로 받는다(자르는 것은 화면 쪽 몫)."""
     pane = find_pane(state, name)
     if not pane:
         return []
-    text = herdr_text("pane", "read", pane["pane_id"], "--lines", lines, "--source", "recent")
+    text = herdr_text("pane", "read", pane["pane_id"], "--lines", lines, "--source", "recent-unwrapped")
     return [line for line in text.splitlines() if line.strip()]
 
 
 # ---------------------------------------------------------------- project
 
 
+def start_timeout(service):
+    return float(service.get("start_timeout", START_TIMEOUT_SECONDS))
+
+
+def is_ready(service, state, child_map, pid_cache=None):
+    """depends_on 대상으로서 준비됐는지. port 가 열려 있으면 다른 곳에서 띄운 서버여도 준비된 것으로 본다."""
+    port = service.get("port")
+    if port and procs.is_listening(int(port)):
+        return True
+    return service_status(service, state, child_map, pid_cache) == Status.RUNNING
+
+
+class StartPlan:
+    """여러 서비스를 depends_on 순서대로 띄우는 계획. step() 을 반복해 호출하면 조금씩 진행한다.
+
+    한 번에 끝까지 기다리지 않는 것은 대시보드가 기다리는 동안에도 입력과 화면 갱신을 계속하기 위해서다.
+    결과
+      started : 새로 띄운 수
+      failed  : [(이름, 이유 키)] — reason.port_in_use / reason.dependency_failed / reason.timeout
+    """
+
+    def __init__(self, project_dir, config, focus=False):
+        self.project_dir = project_dir
+        self.config = config
+        self.focus = focus
+        self.by_name = {service["name"]: service for service in config["services"]}
+        self.pending = list(config["services"])
+        self.begin = time.monotonic()
+        self.started = 0
+        self.started_at = {}   # 이 계획에서 띄운 서비스 이름 → 띄운 시각
+        self.failed = []
+
+    @property
+    def done(self):
+        return not self.pending
+
+    def waiting_names(self):
+        return {service["name"] for service in self.pending}
+
+    def cancel(self):
+        self.pending = []
+
+    def step(self, pid_cache=None):
+        state = live_state(self.project_dir, live_pane_ids())
+        child_map = procs.child_process_map()
+        failed_names = {name for name, _ in self.failed}
+        now = time.monotonic()
+        for service in list(self.pending):
+            dependencies = [self.by_name[name] for name in service.get("depends_on", [])]
+            if any(dependency["name"] in failed_names or self._exited(dependency, state, child_map, pid_cache, now)
+                   for dependency in dependencies):
+                self._fail(service, "reason.dependency_failed")
+            elif all(is_ready(dependency, state, child_map, pid_cache) for dependency in dependencies):
+                self.pending.remove(service)
+                try:
+                    if start_service(self.project_dir, self.config, service, focus=self.focus):
+                        self.started += 1
+                        self.started_at[service["name"]] = time.monotonic()
+                except PortInUseError:
+                    self.failed.append((service["name"], "reason.port_in_use"))
+            elif now - self.begin > start_timeout(service):
+                self._fail(service, "reason.timeout")
+
+    def _exited(self, dependency, state, child_map, pid_cache, now):
+        """의존 서비스가 끝나 버렸는지. 막 띄운 서비스는 셸이 명령을 실행하기 전이라 잠깐 '종료됨'으로 보이므로
+        STARTUP_GRACE_SECONDS 동안은 실패로 보지 않는다."""
+        started_at = self.started_at.get(dependency["name"])
+        if started_at is not None and now - started_at < STARTUP_GRACE_SECONDS:
+            return False
+        return service_status(dependency, state, child_map, pid_cache) == Status.EXITED
+
+    def _fail(self, service, reason):
+        self.pending.remove(service)
+        self.failed.append((service["name"], reason))
+
+    def failure_text(self):
+        return ", ".join(f"{name} ({t(reason)})" for name, reason in self.failed)
+
+
 def up(project_dir, config):
-    started = 0
-    for index, service in enumerate(config["services"]):
-        if start_service(project_dir, config, service, focus=index == 0):
-            started += 1
+    plan = StartPlan(project_dir, config, focus=True)
+    plan.step()
+    while not plan.done:
+        time.sleep(START_POLL_SECONDS)
+        plan.step()
+    if plan.failed:
+        notify(t("notice.title"), t("notice.not_started", details=plan.failure_text()))
     state = read_state(project_dir)
-    if started == 0:
+    if plan.started:
+        notify(t("notice.title"), t("notice.started", label=state["label"], count=plan.started))
+    elif state and not plan.failed:
         herdr("tab", "focus", state["tab_id"])
         notify(t("notice.title"), t("notice.already_running", label=state["label"]))
-        return
-    notify(t("notice.title"), t("notice.started", label=state["label"], count=started))
 
 
-def down(project_dir, quiet=False):
+def down(project_dir, quiet=False, config=None):
     state = live_state(project_dir, live_pane_ids())
     if not state:
         if not quiet:
             notify(t("notice.title"), t("notice.nothing_running"))
         return
-    # Ctrl+C 로 정상 종료 기회를 준 뒤 탭을 닫아 남은 프로세스를 정리한다.
-    for pane in state["panes"]:
-        herdr("pane", "send-keys", pane["pane_id"], "ctrl+c", check=False)
-    time.sleep(STOP_WAIT_SECONDS)
+    # Ctrl+C 로 정상 종료 기회를 주고 끝나기를 기다린 뒤, 탭을 닫아 남은 프로세스를 정리한다.
+    services = {service["name"]: service for service in (config or {}).get("services", [])}
+    interrupt_and_wait([(pane["pane_id"], stop_timeout(services.get(pane["name"]))) for pane in state["panes"]])
     herdr("tab", "close", state["tab_id"])
     remove_state(project_dir)
     if not quiet:

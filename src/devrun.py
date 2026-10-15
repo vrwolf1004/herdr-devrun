@@ -22,15 +22,35 @@ from i18n import t
 PLUGIN_ID = "herdr-devrun"
 # 매니페스트의 [[panes]] id. 액션 id 는 OS 별로 중복 선언할 수 없어 Windows 쪽에 -windows 를 붙였다.
 PANEL_ENTRYPOINT = "panel-windows" if core.IS_WINDOWS else "panel"
+PANEL_LABEL = "devrun"  # 매니페스트 [[panes]] 의 title. 남아 있는 pane id 가 정말 대시보드인지 확인할 때 쓴다.
 
 
 def open_panel(project_dir):
+    """프로젝트의 대시보드가 이미 열려 있으면 그쪽으로 포커스만 옮기고, 없으면 새로 연다."""
+    marker = core.panel_marker_path(project_dir)
+    existing = marker.read_text(encoding="utf-8").strip() if marker.is_file() else ""
+    if existing:
+        pane = (core.herdr("pane", "get", existing, check=False) or {}).get("pane") or {}
+        if pane.get("label") == PANEL_LABEL:
+            core.herdr("plugin", "pane", "focus", existing)
+            return
+
     args = ["plugin", "pane", "open", "--plugin", PLUGIN_ID, "--entrypoint", PANEL_ENTRYPOINT,
             "--placement", "split", "--direction", "right", "--focus", "--env", f"DEVRUN_PROJECT={project_dir}"]
     pane_id = os.environ.get("HERDR_PANE_ID")
     if pane_id:
         args += ["--target-pane", pane_id]
-    core.herdr(*args)
+    opened = core.herdr(*args)
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    marker.write_text(opened["plugin_pane"]["pane"]["pane_id"], encoding="utf-8")
+
+
+def _config_or_none(config_path):
+    """down 은 설정이 깨져 있어도 내릴 수 있어야 한다. stop_timeout 만 못 쓰고 기본값으로 기다린다."""
+    try:
+        return core.read_config(config_path)
+    except core.DevrunError:
+        return None
 
 
 def run(action, explicit_dir):
@@ -44,10 +64,10 @@ def run(action, explicit_dir):
     if action == "up":
         core.up(project_dir, core.read_config(config_path))
     elif action == "down":
-        core.down(project_dir)
+        core.down(project_dir, config=_config_or_none(config_path))
     elif action == "restart":
         config = core.read_config(config_path)
-        core.down(project_dir, quiet=True)
+        core.down(project_dir, quiet=True, config=config)
         core.up(project_dir, config)
     elif action == "panel":
         core.read_config(config_path)

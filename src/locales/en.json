@@ -66,5 +66,23 @@
   "panel.config_error": "Config error: {error}",
   "panel.config_reloaded": "Config reloaded.",
   "panel.error": "Error: {error}",
-  "panel.refresh_error": "Status error: {error}"
+  "panel.refresh_error": "Status error: {error}",
+
+  "error.port_in_use": "{name}: port {port} is already in use by another process.",
+  "error.config_bad_stop_timeout": "{path}: stop_timeout of {name} must be a number of seconds (0 or more).",
+  "notice.panel_crashed": "The dashboard stopped because of an error. Details: {log}",
+  "panel.unexpected_error": "Unexpected error: {error} (details: {log})",
+
+  "status.waiting": "Waiting",
+  "error.config_bad_start_timeout": "{path}: start_timeout of {name} must be a number of seconds (0 or more).",
+  "error.config_bad_depends_on": "{path}: depends_on of {name} must be a list of service names.",
+  "error.config_unknown_dependency": "{path}: {name} depends on an unknown service: {dependency}",
+  "error.config_dependency_cycle": "{path}: depends_on has a cycle: {cycle}",
+  "notice.not_started": "Not started: {details}",
+  "panel.started_all_partial": "Start all finished. Not started: {details}",
+  "panel.more_above": "▲ {count} more",
+  "panel.more_below": "▼ {count} more",
+  "reason.port_in_use": "port in use",
+  "reason.dependency_failed": "dependency failed",
+  "reason.timeout": "timed out waiting for dependencies"
 }
