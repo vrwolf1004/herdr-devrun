@@ -16,7 +16,7 @@ A herdr plugin for starting and managing a project's development services in sep
    ◐ Starting  frontend                                   :5173
    ○ Stopped   worker
 
-  ■ Stop   ↻ Restart   Start all   Stop all   Browser   Settings   Close
+  ■ Stop   ↻ Restart   Start all   Stop all   Browser   Config   Close
 
 ─ Logs · backend ──────────────────────────────────────────────
  Started Application in 4.2 seconds
@@ -28,7 +28,26 @@ A herdr plugin for starting and managing a project's development services in sep
 herdr plugin install vrwolf1004/herdr-devrun
 ```
 
-Create a `.herdr-devrun.json` file in your project, then use the plugin actions or dashboard to manage its services.
+Create a `.herdr-devrun.json` file in your project, then use the plugin actions or dashboard to manage its services. `init` creates a draft file for you.
+
+## Actions
+
+| Action | What it does |
+| --- | --- |
+| `up` | Start the services that are not running, in `depends_on` order |
+| `down` | Send Ctrl+C to each service, wait for it to exit (up to `stop_timeout`), then close its tab |
+| `restart` | Restart the services |
+| `panel` | Open the dashboard (one dashboard per project) |
+| `init` | Create a draft `.herdr-devrun.json` in the current folder |
+
+On Windows, append `-windows` to each action id:
+
+```sh
+herdr plugin action invoke up-windows --plugin herdr-devrun   # windows
+herdr plugin action invoke up --plugin herdr-devrun           # linux / macos
+```
+
+- 7 languages: English, Korean, Russian, French, Spanish, German, Japanese.
 
 ## Documentation
 

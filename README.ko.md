@@ -28,7 +28,26 @@
 herdr plugin install vrwolf1004/herdr-devrun
 ```
 
-프로젝트에 `.herdr-devrun.json`을 작성한 뒤 액션이나 대시보드에서 서비스를 관리하세요.
+프로젝트에 `.herdr-devrun.json`을 작성한 뒤 액션이나 대시보드에서 서비스를 관리하세요. `init` 액션은 초안 파일을 만들어 줍니다.
+
+## 액션
+
+| 액션 | 하는 일 |
+| --- | --- |
+| `up` | 실행 중이 아닌 서비스를 `depends_on` 순서대로 시작합니다 |
+| `down` | 각 서비스에 Ctrl+C를 보내고, 종료될 때까지 기다린 뒤(최대 `stop_timeout`) 탭을 닫습니다 |
+| `restart` | 서비스를 다시 시작합니다 |
+| `panel` | 대시보드를 엽니다 (프로젝트마다 하나) |
+| `init` | 현재 폴더에 `.herdr-devrun.json` 초안을 만듭니다 |
+
+Windows에서는 각 액션 id 뒤에 `-windows`를 붙입니다.
+
+```sh
+herdr plugin action invoke up-windows --plugin herdr-devrun   # windows
+herdr plugin action invoke up --plugin herdr-devrun           # linux / macos
+```
+
+- 7개 언어 지원: 영어, 한국어, 러시아어, 프랑스어, 스페인어, 독일어, 일본어
 
 ## 문서
 
