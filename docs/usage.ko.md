@@ -301,3 +301,12 @@ python -X utf8 src/panel.py --dir <프로젝트 폴더>         # 대시보드�
 
 - 코드를 고친 뒤 확인하거나, 액션이 실패한 원인을 콘솔에서 바로 볼 때 쓴다. herdr CLI가 서버에 연결해야 하므로 herdr 안의 pane에서 실행한다.
 - 수동 실행 상태는 Windows `%LOCALAPPDATA%\herdr-devrun`, Linux/macOS `~/.local/state/herdr-devrun`(또는 `$XDG_STATE_HOME/herdr-devrun`)에 저장된다. 액션 실행 상태(`HERDR_PLUGIN_STATE_DIR`)와 따로 관리되므로, 수동으로 띄운 것은 수동 `down`으로 내린다.
+
+## 문서
+
+- [Usage (English)](usage.md)
+- [문제 해결](troubleshooting.md): 자주 겪는 문제
+- [구조 및 동작 방식](architecture.md): 설계 세부 내용
+- [개발](development.md): 코드 구조, 테스트, 설정 항목과 액션 추가
+- [만든 이유와 범위](start-idea.md)
+- [할 일](todo.md): 개선 목록

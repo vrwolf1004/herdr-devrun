@@ -32,15 +32,17 @@ Create a `.herdr-devrun.json` file in your project, then use the plugin actions 
 
 ## Documentation
 
-Detailed usage guide (English):
+Detailed usage guide:
 
-- [Installation, configuration, actions, and dashboard](docs/usage.md)
+- [Installation, configuration, actions, and dashboard (English)](docs/usage.md)
+- [설치, 설정, 액션 및 대시보드 사용법 (한국어)](docs/usage.ko.md)
 
-Additional guides (Korean):
+Additional guides:
 
-- [Troubleshooting](docs/troubleshooting.md)
-- [Architecture](docs/architecture.md)
-- [Design and scope](docs/start-idea.md)
+- [Troubleshooting (Korean)](docs/troubleshooting.md)
+- [Development and tests (Korean)](docs/development.md)
+- [Architecture (Korean)](docs/architecture.md)
+- [Design and scope (Korean)](docs/start-idea.md)
 
 ## Development
 

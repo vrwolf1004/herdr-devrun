@@ -35,6 +35,7 @@ herdr plugin install vrwolf1004/herdr-devrun
 - [설치, 설정, 액션 및 대시보드 사용법](docs/usage.ko.md)
 - [Usage guide (English)](docs/usage.md)
 - [문제 해결](docs/troubleshooting.md)
+- [개발과 테스트](docs/development.md)
 - [구조 및 동작 방식](docs/architecture.md)
 - [만든 이유와 범위](docs/start-idea.md)
 

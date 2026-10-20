@@ -306,4 +306,11 @@ python -X utf8 src/panel.py --dir <project-folder>         # Run the dashboard i
 - Use this to test code changes or inspect action failures directly in the console. herdr CLI must be able to connect to the server, so run it from a pane inside herdr.
 - Manual-run state is stored in `%LOCALAPPDATA%\herdr-devrun` on Windows, or `~/.local/state/herdr-devrun` (or `$XDG_STATE_HOME/herdr-devrun`) on Linux/macOS. This is separate from action state (`HERDR_PLUGIN_STATE_DIR`); stop manually started services with a manual `down`.
 
-For design details, see [architecture.md](architecture.md). For common problems, see [troubleshooting.md](troubleshooting.md).
+## Documentation
+
+- [Usage (한국어)](usage.ko.md)
+- [Troubleshooting](troubleshooting.md): common problems (Korean)
+- [Architecture](architecture.md): design details (Korean)
+- [Development](development.md): code layout, tests, adding config items and actions (Korean)
+- [Design and scope](start-idea.md) (Korean)
+- [TODO](todo.md): improvement list (Korean)

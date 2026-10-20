@@ -167,8 +167,8 @@
 
 ### 13. 버전 태그
 
-- `herdr-plugin.toml`의 `version`(현재 0.2.0)과 같은 git 태그(`v0.2.0`)를 단다.
-- 사용자는 `herdr plugin install vrwolf1004/herdrPlugin-devrun --ref v0.2.0`으로 버전을 고정할 수 있다.
+- `herdr-plugin.toml`의 `version`(현재 0.3.0)과 같은 git 태그(`v0.3.0`)를 단다.
+- 사용자는 `herdr plugin install vrwolf1004/herdr-devrun --ref v0.3.0`으로 버전을 고정할 수 있다.
 - 이후 변경 시 `version`과 태그를 함께 올린다.
 
 ### 14. 실행되지 않는 코드 정리
