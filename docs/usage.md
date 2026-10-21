@@ -197,7 +197,9 @@ Writing tips:
 
 ## 6. Dashboard
 
-Run the `panel` action to open the dashboard in a pane to the right of the current pane. The dashboard is separate from the service tab, so you can keep working while managing the services. If a dashboard for the same project is already open, the action focuses it instead of opening another one.
+Run the `panel` action to split a pane to the right of the current pane and run the dashboard there. The pane uses the project root as its working directory. If a dashboard for the same project is already running, the action focuses its tab instead of opening another one.
+
+The dashboard runs as a command in the pane's shell. Pressing Ctrl+C stops it and returns to the shell prompt; it does not close the pane. The next `panel` action opens a fresh dashboard.
 
 ```text
  ▣ devrun · my-project                                  2/3 running

@@ -1,16 +1,16 @@
 # 구조
 
-Python 3.8+ 표준 라이브러리만 쓴다. 매니페스트가 같은 동작을 OS별로 두 번 선언하고(Windows `python`, Linux/macOS `python3`), 모든 액션은 `src/devrun.py`를, 대시보드 pane은 `src/panel.py`를 실행한다. OS마다 다른 부분은 `procs.py`(프로세스)와 `term.py`(터미널 입력)에 모았다.
+Python 3.8+ 표준 라이브러리만 쓴다. 매니페스트가 같은 액션을 OS별로 선언하고(Windows `python`, Linux/macOS `python3`), 액션 진입점은 `src/devrun.py`다. `panel` 액션은 pane을 나눈 뒤 셸에 대시보드 명령을 실행한다. OS마다 다른 부분은 `procs.py`(프로세스)와 `term.py`(터미널 입력)에 모았다.
 
 ```text
 herdr-plugin.toml
-  ├─ [[actions]] up / down / restart / init / panel (+ -windows) ─ src/devrun.py <action>
-  └─ [[panes]]   panel (+ panel-windows) ──────────────────────── src/panel.py
+  └─ [[actions]] up / down / restart / init / panel (+ -windows) ─ src/devrun.py <action>
+     [[panes]] panel (+ panel-windows) ─────────────────────────── src/panel.py (direct entrypoint)
 
-src/devrun.py ─┐
-src/panel.py ──┼─ src/core.py ─ src/procs.py   프로세스·포트 조회 (OS별)
-               ├─ src/term.py                  터미널 입출력 (OS별)
-               └─ src/i18n.py ─ src/locales/*.json  문구 번역
+src/devrun.py ── src/core.py ─ src/procs.py   프로세스·포트 조회 (OS별)
+      │         ├─ src/term.py                터미널 입출력 (OS별)
+      │         └─ src/i18n.py ─ src/locales/*.json  문구 번역
+      └─ pane.split + pane.run ─ src/panel.py  대시보드
 
 src/core.py
   ├─ herdr CLI (HERDR_BIN_PATH)          탭·pane 생성, 명령 실행, 상태 조회, 알림
@@ -31,7 +31,7 @@ src/core.py
 - `src/procs.py`: `child_process_map()`(부모 pid → [(자식 pid, 이름)]), `has_running_children()`, `is_listening()`, 파싱 함수 `parse_proc_stat()`, `parse_ps_line()`.
 - `src/term.py`: `open_terminal()`이 OS에 맞는 터미널 객체를 돌려준다. `with` 블록 안에서 대체 화면과 입력 모드를 켜고, `read(timeout)`이 `Event` 목록을 돌려준다. `size()`, `write()`.
 - `src/i18n.py`: 언어 결정, 번역 파일 로드, `t(key, **values)` 문구 치환. 지원 언어는 `en`, `ko`, `ru`, `fr`, `es`, `de`, `ja`이며 문구는 `src/locales/<언어>.json`에 둔다.
-- `src/devrun.py`: 액션 진입점(argparse). 시작 폴더와 설정 파일을 찾아 `core` 함수를 부른다. `panel` 액션은 같은 프로젝트의 대시보드가 열려 있으면 `herdr plugin pane focus`로 이동하고, 없으면 `herdr plugin pane open`으로 연 뒤 pane id를 `<hash>.panel`에 적는다. 남은 id가 진짜 대시보드인지는 pane label(`devrun`)로 확인한다.
+- `src/devrun.py`: 액션 진입점(argparse). 시작 폴더와 설정 파일을 찾아 `core` 함수를 부른다. `panel` 액션은 같은 프로젝트의 pane id 표식이 가리키는 pane이 있으면 해당 탭에 포커스를 둔다. 없으면 현재 pane 오른쪽에 새 pane을 나누고, 프로젝트 루트에서 실행할 `panel.py` 명령을 셸에 입력한 뒤 pane id를 표식 파일에 기록한다. 명령이 끝나면(예: Ctrl+C) `panel.py`가 표식을 지운다.
 - `src/panel.py`: 대시보드. `Panel` 클래스가 화면 상태, 그리기, 입력 해석, 명령 실행을 맡는다.
 
 ## 실행 흐름
@@ -39,7 +39,7 @@ src/core.py
 ### 시작 폴더와 프로젝트 찾기
 
 1. 액션: `--dir`가 있으면 그 폴더, 없으면 `HERDR_PANE_ID`의 pane을 `herdr pane get`으로 조회해 `cwd`를 쓴다.
-2. 대시보드: `panel` 액션이 넣어 준 `DEVRUN_PROJECT` 환경변수, 수동 실행이면 `--dir`.
+2. 대시보드: `panel` 액션이 전달한 `--dir`, 수동 실행이면 직접 지정한 `--dir`.
 3. 시작 폴더에서 상위로 올라가며 `.herdr-devrun.json`을 찾는다. 찾은 파일이 있는 폴더가 **프로젝트 루트**다.
 4. `init`만 예외로 상위 탐색 없이 시작 폴더에 파일을 만든다.
 
@@ -176,6 +176,6 @@ with terminal:   입력 모드 변경 → 대체 화면, 커서 숨김
 - **pane id 위치**: `tab create`는 `result.root_pane.pane_id`, `pane split`은 `result.pane.pane_id`로 돌려준다. `pane_id_of()`가 둘 다 처리한다.
 - **환경변수**: `--env KEY=VALUE`는 pane에서 실행되는 셸 프로세스에 들어가므로, 그 셸에서 실행하는 서비스 명령이 물려받는다.
 - **언어**: `HERDR_DEVRUN_LANG` 환경변수 → `HERDR_PLUGIN_CONFIG_DIR/config.json`의 `lang` → OS 언어 → `en` 순서로 결정한다. Windows는 사용자 UI 언어, Linux/macOS는 `LC_ALL`, `LC_MESSAGES`, `LANG` 순서로 감지한다. 지원하지 않는 언어는 다음 단계로 넘어가고, 빠진 번역 키는 영어로 대체한다.
-- **플러그인 pane cwd**: `plugin pane open`에 `--cwd`를 주지 않으면 플러그인 폴더에서 실행된다. 매니페스트의 `src/panel.py` 상대 경로가 이것에 기대므로 `--cwd`를 넘기지 않는다.
+- **플러그인 pane cwd**: 매니페스트의 직접 `panel` pane은 플러그인 폴더에서 `src/panel.py`를 실행한다. 일반 `panel` 액션은 pane을 나눈 뒤 셸에 절대 경로 명령을 실행하고, 프로젝트 루트를 `--dir`로 전달한다.
 - **테스트**: `tests/`의 표준 `unittest`(`python -m unittest discover -s tests`). herdr 없이 도는 부분(입력 해석, 설정 검증, 프로세스 판정, 번역 파일, 대시보드 그리기)을 다룬다. `.github/workflows/test.yml`이 push마다 Windows/Ubuntu/macOS × Python 3.8/3.12에서 돌린다. herdr가 필요한 시작·중지 흐름은 자동 테스트가 없어 실제 herdr에서 확인한다.
 - **액션 id 중복 불가**: herdr 0.9.4는 플랫폼이 달라도 같은 액션 id를 거부한다(`duplicate_plugin_action_id`). 확장자 없는 상대 경로 명령(`bin/devrun`)은 Windows에서 찾지 못해, OS별 공용 실행 파일 방식도 쓸 수 없었다.

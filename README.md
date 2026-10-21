@@ -29,6 +29,7 @@ herdr plugin install vrwolf1004/herdr-devrun
 ```
 
 Create a `.herdr-devrun.json` file in your project, then use the plugin actions or dashboard to manage its services. `init` creates a draft file for you.
+The dashboard opens in a pane to the right of the current pane. Pressing Ctrl+C stops the dashboard but leaves its shell pane open; running `panel` again opens a fresh dashboard.
 
 ## Actions
 

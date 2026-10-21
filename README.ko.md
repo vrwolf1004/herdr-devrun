@@ -29,6 +29,7 @@ herdr plugin install vrwolf1004/herdr-devrun
 ```
 
 프로젝트에 `.herdr-devrun.json`을 작성한 뒤 액션이나 대시보드에서 서비스를 관리하세요. `init` 액션은 초안 파일을 만들어 줍니다.
+대시보드는 현재 pane 오른쪽에 열립니다. Ctrl+C를 누르면 대시보드만 종료되고 셸 pane은 남으며, `panel`을 다시 실행하면 새 대시보드가 열립니다.
 
 ## 액션
 

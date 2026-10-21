@@ -468,6 +468,9 @@ def main():
         core.notify(t("notice.error_title"), t("notice.panel_crashed", log=log_path))
         print(traceback.format_exc(), file=sys.stderr)
         return 1
+    finally:
+        # 대시보드가 끝나면 pane 을 다시 찾는 표식을 지운다. 다음 열기는 새 pane 을 만든다.
+        core.panel_marker_path(config_path.parent).unlink(missing_ok=True)
     return 0
 
 

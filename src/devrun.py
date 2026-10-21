@@ -14,35 +14,41 @@
 
 import argparse
 import os
+import shlex
+import subprocess
 import sys
+from pathlib import Path
 
 import core
 from i18n import t
 
 PLUGIN_ID = "herdr-devrun"
-# 매니페스트의 [[panes]] id. 액션 id 는 OS 별로 중복 선언할 수 없어 Windows 쪽에 -windows 를 붙였다.
-PANEL_ENTRYPOINT = "panel-windows" if core.IS_WINDOWS else "panel"
-PANEL_LABEL = "devrun"  # 매니페스트 [[panes]] 의 title. 남아 있는 pane id 가 정말 대시보드인지 확인할 때 쓴다.
+PANEL_SCRIPT = Path(__file__).resolve().parent / "panel.py"
+
+
+def panel_command(project_dir):
+    """pane 의 셸에 입력할 대시보드 명령. Windows 와 그 밖의 셸은 인용 규칙이 달라 OS 에 맞춰 만든다."""
+    argv = [sys.executable, "-X", "utf8", str(PANEL_SCRIPT), "--dir", str(project_dir)]
+    return subprocess.list2cmdline(argv) if core.IS_WINDOWS else shlex.join(argv)
 
 
 def open_panel(project_dir):
-    """프로젝트의 대시보드가 이미 열려 있으면 그쪽으로 포커스만 옮기고, 없으면 새로 연다."""
+    """프로젝트의 대시보드가 이미 열려 있으면 그쪽으로 포커스만 옮기고, 없으면 현재 pane 옆에 새로 연다.
+    대시보드는 새 pane 의 셸에 명령을 입력해 실행한다. 끝나면(Ctrl+C) 셸 프롬프트가 남고 표식 파일은 지워진다."""
     marker = core.panel_marker_path(project_dir)
     existing = marker.read_text(encoding="utf-8").strip() if marker.is_file() else ""
-    if existing:
-        pane = (core.herdr("pane", "get", existing, check=False) or {}).get("pane") or {}
-        if pane.get("label") == PANEL_LABEL:
-            core.herdr("plugin", "pane", "focus", existing)
-            return
+    pane = (core.herdr("pane", "get", existing, check=False) or {}).get("pane") if existing else None
+    if pane:
+        core.herdr("tab", "focus", pane["tab_id"])  # 셸로 연 pane 은 plugin pane focus 로 찾을 수 없어 탭으로 옮긴다
+        return
 
-    args = ["plugin", "pane", "open", "--plugin", PLUGIN_ID, "--entrypoint", PANEL_ENTRYPOINT,
-            "--placement", "split", "--direction", "right", "--focus", "--env", f"DEVRUN_PROJECT={project_dir}"]
-    pane_id = os.environ.get("HERDR_PANE_ID")
-    if pane_id:
-        args += ["--target-pane", pane_id]
-    opened = core.herdr(*args)
+    anchor = os.environ.get("HERDR_PANE_ID")
+    split = ["pane", "split", *([anchor] if anchor else []), "--direction", "right",
+             "--cwd", str(project_dir), "--focus"]
+    pane_id = core.pane_id_of(core.herdr(*split))
+    core.herdr("pane", "run", pane_id, panel_command(project_dir))
     marker.parent.mkdir(parents=True, exist_ok=True)
-    marker.write_text(opened["plugin_pane"]["pane"]["pane_id"], encoding="utf-8")
+    marker.write_text(pane_id, encoding="utf-8")
 
 
 def _config_or_none(config_path):
