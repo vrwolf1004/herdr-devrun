@@ -2,67 +2,47 @@
 
 [**English**](README.md) | [한국어](README.ko.md)
 
-A herdr plugin for starting and managing a project's development services in separate panes from a single dashboard.
+🌐 UI languages: 🇺🇸 English (en) · 🇰🇷 한국어 (ko) · 🇷🇺 Русский (ru) · 🇫🇷 Français (fr) · 🇪🇸 Español (es) · 🇩🇪 Deutsch (de) · 🇯🇵 日本語 (ja)
 
-- Windows, Linux, and macOS
-- Python 3.8+; standard library only
-- herdr 0.9.0+
+Start and manage a project's development services in separate panes from one herdr dashboard.
 
-```text
- ▣ devrun · my-project                                  2/3 running
+## Dashboard design
 
-   Status      Service                                    Port
- ▸ ● Running   backend                                    :8080
-   ◐ Starting  frontend                                   :5173
-   ○ Stopped   worker
+The dashboard shows service status, ports, and recent logs, and lets you start, stop, restart, or open a service URL. It opens to the right of the current pane; Ctrl+C returns to the shell.
 
-  ■ Stop   ↻ Restart   Start all   Stop all   Browser   Config   Close
-
-─ Logs · backend ──────────────────────────────────────────────
- Started Application in 4.2 seconds
-```
-
-## Install
+## Installation
 
 ```sh
 herdr plugin install vrwolf1004/herdr-devrun
 ```
 
-Create a `.herdr-devrun.json` file in your project, then use the plugin actions or dashboard to manage its services. `init` creates a draft file for you.
-The dashboard opens in a pane to the right of the current pane. Pressing Ctrl+C stops the dashboard but leaves its shell pane open; running `panel` again opens a fresh dashboard.
-
 ## Actions
 
 | Action | What it does |
 | --- | --- |
-| `up` | Start the services that are not running, in `depends_on` order |
-| `down` | Send Ctrl+C to each service, wait for it to exit (up to `stop_timeout`), then close its tab |
-| `restart` | Restart the services |
-| `panel` | Open the dashboard (one dashboard per project) |
-| `init` | Create a draft `.herdr-devrun.json` in the current folder |
+| `up` | Start services that are not running, respecting `depends_on` |
+| `down` | Stop services and close their tab |
+| `restart` | Stop and start the services |
+| `panel` | Open the project dashboard |
+| `init` | Create a draft `.herdr-devrun.json` |
 
-On Windows, append `-windows` to each action id:
+On Windows, append `-windows` to each action ID. The action uses the focused pane's project; see the [usage guide](docs/usage.md) for configuration and examples.
 
-```sh
-herdr plugin action invoke up-windows --plugin herdr-devrun   # windows
-herdr plugin action invoke up --plugin herdr-devrun           # linux / macos
-```
+## Requirements
 
-- 7 languages: English, Korean, Russian, French, Spanish, German, Japanese.
+- Windows, Linux, or macOS
+- herdr 0.9.0 or later
+- Python 3.8 or later; standard library only
 
 ## Documentation
 
-Detailed usage guide:
-
-- [Installation, configuration, actions, and dashboard (English)](docs/usage.md)
-- [설치, 설정, 액션 및 대시보드 사용법 (한국어)](docs/usage.ko.md)
-
-Additional guides:
-
-- [Troubleshooting (Korean)](docs/troubleshooting.md)
-- [Development and tests (Korean)](docs/development.md)
-- [Architecture (Korean)](docs/architecture.md)
-- [Design and scope (Korean)](docs/start-idea.md)
+- [Usage (English)](docs/usage.md)
+- [사용법 (한국어)](docs/usage.ko.md)
+- [Troubleshooting](docs/troubleshooting.md)
+- [Architecture](docs/architecture.md)
+- [Development and tests](docs/development.md)
+- [Design and scope](docs/start-idea.md)
+- [TODO](docs/todo.md)
 
 ## Development
 
@@ -73,8 +53,6 @@ python -m unittest discover -s tests
 ## License
 
 [MIT](LICENSE)
-
----
 
 ## Support the project
 

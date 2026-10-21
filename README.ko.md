@@ -1,26 +1,14 @@
 # herdr-devrun
 
-[English](README.md) | **한국어**
+[English](README.md) | [**한국어**](README.ko.md)
 
-프로젝트의 개발 서비스를 하나의 herdr 대시보드에서 각각의 pane으로 실행하고 관리하는 플러그인입니다.
+🌐 UI 언어: 🇺🇸 English (en) · 🇰🇷 한국어 (ko) · 🇷🇺 Русский (ru) · 🇫🇷 Français (fr) · 🇪🇸 Español (es) · 🇩🇪 Deutsch (de) · 🇯🇵 日本語 (ja)
 
-- Windows, Linux, macOS 지원
-- Python 3.8 이상, 표준 라이브러리만 사용
-- herdr 0.9.0 이상
+프로젝트 개발 서비스를 하나의 herdr 대시보드에서 별도 pane으로 실행하고 관리합니다.
 
-```text
- ▣ devrun · my-project                                  2/3 실행
+## 대시보드 디자인
 
-   상태       서비스                                     포트
- ▸ ● 실행 중  backend                                    :8080
-   ◐ 시작 중  frontend                                   :5173
-   ○ 중지     worker
-
-  ■ 중지   ↻ 재시작   전체 시작   전체 중지   브라우저   설정   닫기
-
-─ 로그 · backend ──────────────────────────────────────────────
- Started Application in 4.2 seconds
-```
+서비스 상태, 포트, 최근 로그를 확인하고 서비스를 시작·중지·재시작하거나 URL을 열 수 있습니다. 현재 pane 오른쪽에 열리며 Ctrl+C를 누르면 셸로 돌아옵니다.
 
 ## 설치
 
@@ -28,36 +16,33 @@
 herdr plugin install vrwolf1004/herdr-devrun
 ```
 
-프로젝트에 `.herdr-devrun.json`을 작성한 뒤 액션이나 대시보드에서 서비스를 관리하세요. `init` 액션은 초안 파일을 만들어 줍니다.
-대시보드는 현재 pane 오른쪽에 열립니다. Ctrl+C를 누르면 대시보드만 종료되고 셸 pane은 남으며, `panel`을 다시 실행하면 새 대시보드가 열립니다.
-
 ## 액션
 
-| 액션 | 하는 일 |
+| 액션 | 기능 |
 | --- | --- |
-| `up` | 실행 중이 아닌 서비스를 `depends_on` 순서대로 시작합니다 |
-| `down` | 각 서비스에 Ctrl+C를 보내고, 종료될 때까지 기다린 뒤(최대 `stop_timeout`) 탭을 닫습니다 |
-| `restart` | 서비스를 다시 시작합니다 |
-| `panel` | 대시보드를 엽니다 (프로젝트마다 하나) |
-| `init` | 현재 폴더에 `.herdr-devrun.json` 초안을 만듭니다 |
+| `up` | 실행 중이 아닌 서비스를 `depends_on` 순서대로 시작 |
+| `down` | 서비스를 중지하고 서비스 탭 닫기 |
+| `restart` | 서비스를 중지한 뒤 다시 시작 |
+| `panel` | 프로젝트 대시보드 열기 |
+| `init` | `.herdr-devrun.json` 초안 만들기 |
 
-Windows에서는 각 액션 id 뒤에 `-windows`를 붙입니다.
+Windows에서는 각 액션 ID 뒤에 `-windows`를 붙입니다. 설정과 예시는 [사용법](docs/usage.ko.md)을 참고하세요.
 
-```sh
-herdr plugin action invoke up-windows --plugin herdr-devrun   # windows
-herdr plugin action invoke up --plugin herdr-devrun           # linux / macos
-```
+## 요구 사항
 
-- 7개 언어 지원: 영어, 한국어, 러시아어, 프랑스어, 스페인어, 독일어, 일본어
+- Windows, Linux, macOS
+- herdr 0.9.0 이상
+- Python 3.8 이상, 표준 라이브러리만 사용
 
 ## 문서
 
-- [설치, 설정, 액션 및 대시보드 사용법](docs/usage.ko.md)
-- [Usage guide (English)](docs/usage.md)
+- [사용법 (한국어)](docs/usage.ko.md)
+- [Usage (English)](docs/usage.md)
 - [문제 해결](docs/troubleshooting.md)
-- [개발과 테스트](docs/development.md)
 - [구조 및 동작 방식](docs/architecture.md)
+- [개발과 테스트](docs/development.md)
 - [만든 이유와 범위](docs/start-idea.md)
+- [할 일](docs/todo.md)
 
 ## 개발
 
@@ -68,8 +53,6 @@ python -m unittest discover -s tests
 ## 라이선스
 
 [MIT](LICENSE)
-
----
 
 ## 프로젝트 응원하기
 
