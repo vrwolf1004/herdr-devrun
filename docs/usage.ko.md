@@ -84,7 +84,8 @@ herdr server reload-config  # 실행 중인 서버에 반영
 ```
 
 - 키를 정하기 전에 기존 바인딩이나 다른 플러그인 키와 겹치지 않는지 확인한다.
-- 단축키 없이 실행: `herdr plugin action invoke up --plugin herdr-devrun` (Windows: `up-windows`) (지금 포커스된 pane 기준)
+- 단축키 없이 실행: `herdr plugin action invoke up --plugin herdr-devrun` 또는 `herdr plugin action invoke run --plugin herdr-devrun` (Windows: `up-windows` 또는 `run-windows`). 두 액션 모두 현재 포커스된 pane의 프로젝트를 사용한다.
+- `run`은 `up`과 같은 시작 구현을 호출하는 별도 액션 ID다. `run`은 별도의 CLI 하위 명령이 아니다.
 
 ## 3. 프로젝트에 설정 파일 만들기
 
@@ -155,7 +156,11 @@ herdr server reload-config  # 실행 중인 서버에 반영
 - OS마다 명령이 다르면 `command`에 한쪽을, `command_windows` 또는 `command_unix`에 다른 쪽을 쓴다. 같으면 `command`만 쓴다.
 - 암호화 키, 비밀번호 같은 비밀값은 `env`에 적지 않는다. OS 환경변수로 두면 pane이 물려받는다. 설정 파일은 git에 올라갈 수 있다.
 - 설정 파일을 팀과 공유하지 않으려면 프로젝트 `.gitignore`에 `.herdr-devrun.json`을 추가한다.
-- 설정 검증: 숫자가 아닌 `stop_timeout`/`start_timeout`, 없는 서비스를 가리키는 `depends_on`, 순환(`a → b → a`, 자기 자신 포함)은 오류로 알려 준다.
+- 설정 검증: 최상위 값은 JSON 객체여야 하고 `services`는 비어 있지 않은 목록이어야
+  한다. 각 서비스에는 중복되지 않는 `name`과 명령이 필요하다. `port`는 1~65535의
+  정수, `start_timeout`/`stop_timeout`은 0 이상의 숫자여야 한다. `depends_on`은
+  존재하는 서비스 이름 목록이어야 하며, 순환(자기 자신 포함)은 오류로 보고한다.
+  잘못된 설정은 파일 경로와 검증 오류를 포함해 액션 오류로 표시한다.
 
 > **보안 주의**: `command`는 그대로 셸에 입력된다. 남의 저장소를 받아 `up`을 실행하면 그 저장소가 정한 명령이 실행된다(npm scripts, Makefile과 같은 성격). 처음 받은 저장소는 실행 전에 `.herdr-devrun.json` 내용을 확인한다.
 
@@ -184,6 +189,10 @@ herdr server reload-config  # 실행 중인 서버에 반영
 
 - `port`를 이미 다른 프로세스가 쓰고 있으면 그 서비스는 시작하지 않는다. 띄워도 포트 충돌로 실패하는데, 포트는 열려 있어 "실행 중"으로 잘못 보이기 때문이다.
 - 전체 시작에서는 그 서비스만 건너뛰고(`port in use`) 나머지는 시작한다.
+- herdr가 새 서비스 pane에 명령을 입력하지 못하면 추가 작업을 되돌린다. 첫 서비스라
+  새 탭을 만든 경우 탭을 닫고 프로젝트 상태를 삭제하며, 기존 탭에 추가한 서비스라면
+  해당 pane만 닫고 상태에서도 제거한다. 이 정리는 명령 입력 실패에 적용된다. 명령이
+  정상적으로 입력된 뒤 서비스 프로세스가 종료되면 로그를 확인할 수 있도록 pane은 남는다.
 
 ### 중지 대기
 

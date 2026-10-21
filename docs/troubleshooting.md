@@ -19,6 +19,8 @@ herdr plugin log list --plugin herdr-devrun
 | Windows에서 `python` 실행 시 Microsoft Store가 열림 | Store 별칭(App execution alias)만 있고 실제 Python이 없음 | python.org 설치본을 설치하고 PATH에 추가하거나, 설정 → 앱 실행 별칭에서 python 별칭을 끈다 |
 | `.herdr-devrun.json 을 찾을 수 없습니다` | 액션을 실행한 pane 폴더와 그 상위에 설정 파일이 없음 | 프로젝트 안의 pane에서 실행하거나 `init`으로 만든다. `herdr plugin action invoke`는 **포커스된 pane** 기준이다 |
 | `services 가 없습니다` / `name, command 가 필요합니다` / `name 이 중복됩니다` | 설정 파일 내용 문제 | [usage.md](usage.md) 4장 형식대로 고친다 |
+| 설정 오류에 `port`, `timeout`, `depends_on`이 표시됨 | 값 형식이 잘못됐거나 의존 이름/순환 문제 | [usage.md](usage.md) 4장의 검증 규칙을 확인한다. `port`는 1~65535 정수, timeout은 0 이상 숫자, `depends_on`은 존재하는 이름의 목록이어야 하며 순환할 수 없다 |
+| 시작 액션이 명령을 pane에 입력하지 못했다고 실패함 | herdr가 서비스 명령을 실행 pane에 전달하지 못함 | 첫 서비스 시작 중 만들어진 탭과 상태는 정리된다. 기존 서비스 탭에 추가 중이었다면 새 pane만 닫히고 상태에서 제거된다. 반면, 명령이 입력된 뒤 프로세스가 종료된 경우 pane은 로그 확인을 위해 남는다 |
 | `JSON 오류` | `\`를 하나만 씀, 끝 쉼표, 주석 사용 | `\\`로 쓰고, 끝 쉼표와 주석을 지운다 |
 | `[이름] 폴더가 없습니다` | `cwd` 경로 오타, 또는 설정 파일 기준이 아닌 경로 | 설정 파일이 있는 폴더 기준 상대 경로로 쓴다 |
 | Windows 액션이 안 보이거나 단축키가 안 먹음 | Linux/macOS id를 씀 | Windows는 `herdr-devrun.up-windows`처럼 `-windows`를 붙인다 |

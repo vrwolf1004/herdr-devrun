@@ -37,13 +37,18 @@ herdr plugin install vrwolf1004/herdr-devrun
 | 액션 | 기능 |
 | --- | --- |
 | `up` | 실행 중이 아닌 서비스를 `depends_on` 순서대로 시작 |
-| `run` | `up`과 같은 동작 |
+| `run` | `up`과 같은 서비스 시작 동작 |
 | `down` | 서비스를 중지하고 서비스 탭 닫기 |
 | `restart` | 서비스를 중지한 뒤 다시 시작 |
 | `panel` | 프로젝트 대시보드 열기 |
 | `init` | `.herdr-devrun.json` 초안 만들기 |
 
 Windows에서는 각 액션 ID 뒤에 `-windows`를 붙입니다. 설정과 예시는 [사용법](docs/usage.ko.md)을 참고하세요.
+
+`run`은 별도의 herdr 액션 ID이며 `up`과 같은 방식으로 서비스를 시작합니다.
+프로젝트 설정이 유효하지 않으면 액션 오류로 보고합니다. herdr가 새 서비스 명령을
+pane에 입력하지 못하면 새 탭과 저장 상태를 정리하고, 기존 탭에서는 새로 추가한
+pane만 닫습니다. 검증 항목과 오류 복구는 [사용법](docs/usage.ko.md)을 참고하세요.
 
 ## 요구 사항
 

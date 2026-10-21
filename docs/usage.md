@@ -87,7 +87,9 @@ herdr server reload-config  # Apply it to the running server
 ```
 
 - Check that the keys do not conflict with existing bindings or other plugins.
-- To run an action without a shortcut: `herdr plugin action invoke up --plugin herdr-devrun` (Windows: `up-windows`) (uses the currently focused pane).
+- To run an action without a shortcut: `herdr plugin action invoke up --plugin herdr-devrun` or `herdr plugin action invoke run --plugin herdr-devrun` (Windows: `up-windows` or `run-windows`). Both use the currently focused pane's project.
+- `run` is an additional action ID for the same start operation as `up`; both
+  invoke the `up` implementation. `run` is not a separate CLI subcommand.
 
 ## 3. Create a project configuration
 
@@ -160,6 +162,12 @@ Writing tips:
 - Do not put secrets such as encryption keys or passwords in `env`. Use OS environment variables instead. Configuration files may be committed to Git.
 - To keep the configuration out of a shared repository, add `.herdr-devrun.json` to the project's `.gitignore`.
 - Validation reports non-numeric `stop_timeout`/`start_timeout`, unknown `depends_on` services, and dependency cycles (including self-dependencies).
+- Before starting, the configuration is checked for a JSON object containing a
+  non-empty `services` list; each service must have a unique `name` and a
+  command. A configured `port` must be an integer from 1 through 65535;
+  timeouts must be non-negative numbers; `depends_on` must be a list of
+  existing service names with no dependency cycle. Invalid configuration is
+  reported by the action (including its file path and the validation problem).
 
 > **Security:** `command` is entered directly into a shell. Running `up` on an untrusted repository executes commands defined by that repository, similar to running its npm scripts or Makefile. Review `.herdr-devrun.json` before running an unfamiliar project.
 
@@ -188,6 +196,12 @@ Writing tips:
 
 - If another process already uses a configured `port`, that service is not started. Otherwise the attempted launch may fail while the open port makes the service appear to be running.
 - During start-all, only the service with the conflict is skipped (`port in use`); other services continue starting.
+- If herdr rejects the command before it can be entered into a newly created
+  service pane, devrun rolls back that pane: it closes the new tab and removes
+  the project state if this was the first service, or closes only the added
+  pane and removes it from state if the service tab already existed. This
+  rollback covers command-entry failures; a command that starts and then exits
+  remains in its pane so its output can be inspected.
 
 ### Stop timeout
 

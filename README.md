@@ -37,13 +37,19 @@ herdr plugin install vrwolf1004/herdr-devrun
 | Action | What it does |
 | --- | --- |
 | `up` | Start services that are not running, respecting `depends_on` |
-| `run` | Alias for `up` |
+| `run` | Start services, same behavior as `up` |
 | `down` | Stop services and close their tab |
 | `restart` | Stop and start the services |
 | `panel` | Open the project dashboard |
 | `init` | Create a draft `.herdr-devrun.json` |
 
 On Windows, append `-windows` to each action ID. The action uses the focused pane's project; see the [usage guide](docs/usage.md) for configuration and examples.
+
+`run` is a separate herdr action ID that invokes the same start behavior as
+`up`. Invalid project configuration is reported as an action error; if herdr
+cannot enter a newly created service command, devrun closes the new tab and
+removes its saved state (or closes only the newly added pane in an existing
+tab). See the [usage guide](docs/usage.md) for validation rules and recovery.
 
 ## Requirements
 
