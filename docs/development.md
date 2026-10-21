@@ -20,10 +20,12 @@ herdr-devrun/
 │   └── locales/<언어>.json      화면 문구 (en, ko, ru, fr, es, de, ja)
 └── tests/                       unittest 테스트
     ├── support.py               테스트 공용 도구
-    ├── test_config.py           설정 검사, 시작 순서, 명령 선택
+    ├── test_config.py           설정·의존성 검사, 명령 선택
     ├── test_i18n.py             언어 파일의 키와 치환 값 검사
     ├── test_panel.py            대시보드 그리기와 입력 해석
     ├── test_procs.py            프로세스 파싱
+    ├── test_process_detection.py 프로세스 트리와 종료 대기
+    ├── test_state_recovery.py   상태 파일과 시작 실패 복구
     └── test_term.py             터미널 입력 처리
 ```
 

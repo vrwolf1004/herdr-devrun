@@ -37,6 +37,7 @@ herdr plugin install vrwolf1004/herdr-devrun
 | 액션 | 기능 |
 | --- | --- |
 | `up` | 실행 중이 아닌 서비스를 `depends_on` 순서대로 시작 |
+| `run` | `up`과 같은 동작 |
 | `down` | 서비스를 중지하고 서비스 탭 닫기 |
 | `restart` | 서비스를 중지한 뒤 다시 시작 |
 | `panel` | 프로젝트 대시보드 열기 |

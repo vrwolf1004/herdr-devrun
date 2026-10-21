@@ -37,6 +37,7 @@ herdr plugin install vrwolf1004/herdr-devrun
 | Action | What it does |
 | --- | --- |
 | `up` | Start services that are not running, respecting `depends_on` |
+| `run` | Alias for `up` |
 | `down` | Stop services and close their tab |
 | `restart` | Stop and start the services |
 | `panel` | Open the project dashboard |
