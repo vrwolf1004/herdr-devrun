@@ -2,7 +2,7 @@
 
 [English](README.md) | [**한국어**](README.ko.md)
 
-🌐 UI 언어: 🇺🇸 English (en) · 🇰🇷 한국어 (ko) · 🇷🇺 Русский (ru) · 🇫🇷 Français (fr) · 🇪🇸 Español (es) · 🇩🇪 Deutsch (de) · 🇯🇵 日本語 (ja)
+지원 언어: 영어 · 한국어 · 러시아어 · 프랑스어 · 스페인어 · 독일어 · 일본어
 
 프로젝트 개발 서비스를 하나의 herdr 대시보드에서 별도 pane으로 실행하고 관리합니다.
 
