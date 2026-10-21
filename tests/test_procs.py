@@ -42,6 +42,12 @@ class RunningChildrenTest(unittest.TestCase):
         child_map = {self.SHELL: [(101, "cmd.exe")], 101: [(self.SHELL, "cmd.exe")]}
         self.assertFalse(procs.has_running_children(child_map, self.SHELL))
 
+    def test_vanished_child_is_not_running(self):
+        # 목록을 모으는 사이 끝난 프로세스는 자식 목록에 없어도 안전하게 빈 결과로 본다.
+        child_map = {self.SHELL: [(101, "cmd.exe")]}
+        self.assertFalse(procs.has_running_children(child_map, self.SHELL))
+        self.assertFalse(procs.has_running_children(child_map, 999))
+
 
 class ListeningTest(unittest.TestCase):
     def test_listening_and_closed(self):

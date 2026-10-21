@@ -9,7 +9,6 @@
   "notice.init_detected": "서비스 {count}개 감지",
   "notice.init_example": "감지된 서비스 없음, 예시로 채움",
   "notice.init_created": "{path} 생성 ({detail}). 내용을 확인하세요.",
-
   "error.herdr_failed": "herdr {command} 실패: {detail}",
   "error.pane_id_missing": "pane id 를 찾을 수 없습니다: {result}",
   "error.start_dir_unknown": "시작 폴더를 알 수 없습니다. pane 에서 실행하거나 --dir 를 지정하세요.",
@@ -21,17 +20,14 @@
   "error.service_dir_missing": "[{name}] 폴더가 없습니다: {path}",
   "error.unknown_action": "알 수 없는 액션: {action}",
   "error.unknown_command": "알 수 없는 명령: {command}",
-
   "cli.dir_help": "pane cwd 대신 쓸 시작 폴더",
   "cli.panel_dir_help": "프로젝트 폴더 (기본: DEVRUN_PROJECT)",
   "cli.panel_dir_required": "DEVRUN_PROJECT 또는 --dir 가 필요합니다.",
-
   "status.running": "실행 중",
   "status.starting": "시작 중",
   "status.exited": "종료됨",
   "status.stopped": "중지",
   "status.working": "처리 중",
-
   "panel.running_count": "{running}/{total} 실행",
   "panel.header.status": "상태",
   "panel.header.service": "서비스",
@@ -40,7 +36,6 @@
   "panel.log_title_empty": "로그",
   "panel.not_running": "(실행 중이 아닙니다)",
   "panel.footer": "↑↓ 선택 · Enter 시작/중지 · r 재시작 · a/x 전체 시작/중지 · o 브라우저 · e 설정 · q 닫기",
-
   "panel.button.start": "▶ 시작",
   "panel.button.stop": "■ 중지",
   "panel.button.restart": "↻ 재시작",
@@ -49,7 +44,6 @@
   "panel.button.browser": "브라우저",
   "panel.button.config": "설정",
   "panel.button.quit": "닫기",
-
   "panel.starting": "{name} 시작 중…",
   "panel.started": "{name} 시작",
   "panel.stopping": "{name} 중지 중…",
@@ -67,12 +61,10 @@
   "panel.config_reloaded": "설정을 다시 읽었습니다.",
   "panel.error": "오류: {error}",
   "panel.refresh_error": "상태 조회 오류: {error}",
-
   "error.port_in_use": "{name} : {port} 포트를 이미 다른 프로세스가 쓰고 있습니다.",
   "error.config_bad_stop_timeout": "{path} : {name} 의 stop_timeout 은 0 이상의 초(숫자)여야 합니다.",
   "notice.panel_crashed": "오류로 대시보드가 종료됐습니다. 자세한 내용: {log}",
   "panel.unexpected_error": "예상하지 못한 오류: {error} (자세한 내용: {log})",
-
   "status.waiting": "대기 중",
   "error.config_bad_start_timeout": "{path} : {name} 의 start_timeout 은 0 이상의 초(숫자)여야 합니다.",
   "error.config_bad_depends_on": "{path} : {name} 의 depends_on 은 서비스 이름 목록이어야 합니다.",
@@ -84,5 +76,8 @@
   "panel.more_below": "▼ {count}개 더",
   "reason.port_in_use": "포트 사용 중",
   "reason.dependency_failed": "의존 서비스 실패",
-  "reason.timeout": "의존 서비스 대기 시간 초과"
+  "reason.timeout": "의존 서비스 대기 시간 초과",
+  "error.config_not_object": "{path}: 최상위는 JSON 객체여야 합니다",
+  "error.config_bad_services": "{path}: \"services\" 는 목록이어야 합니다",
+  "error.config_bad_port": "{path}: 서비스 \"{name}\" 의 port 는 1~65535 사이 숫자여야 합니다"
 }

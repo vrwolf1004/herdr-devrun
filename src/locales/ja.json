@@ -9,7 +9,6 @@
   "notice.init_detected": "サービスを {count} 件検出",
   "notice.init_example": "検出なし、サンプルで作成",
   "notice.init_created": "{path} を作成しました ({detail})。内容を確認してください。",
-
   "error.herdr_failed": "herdr {command} が失敗しました: {detail}",
   "error.pane_id_missing": "pane id が見つかりません: {result}",
   "error.start_dir_unknown": "開始フォルダーがわかりません。pane から実行するか --dir を指定してください。",
@@ -21,17 +20,14 @@
   "error.service_dir_missing": "[{name}] フォルダーがありません: {path}",
   "error.unknown_action": "不明なアクション: {action}",
   "error.unknown_command": "不明なコマンド: {command}",
-
   "cli.dir_help": "pane の cwd の代わりに使う開始フォルダー",
   "cli.panel_dir_help": "プロジェクトフォルダー (既定: DEVRUN_PROJECT)",
   "cli.panel_dir_required": "DEVRUN_PROJECT または --dir が必要です。",
-
   "status.running": "実行中",
   "status.starting": "起動中",
   "status.exited": "終了",
   "status.stopped": "停止",
   "status.working": "処理中",
-
   "panel.running_count": "{running}/{total} 実行中",
   "panel.header.status": "状態",
   "panel.header.service": "サービス",
@@ -40,7 +36,6 @@
   "panel.log_title_empty": "ログ",
   "panel.not_running": "(実行されていません)",
   "panel.footer": "↑↓ 選択 · Enter 開始/停止 · r 再起動 · a/x すべて開始/停止 · o ブラウザ · e 設定 · q 閉じる",
-
   "panel.button.start": "▶ 開始",
   "panel.button.stop": "■ 停止",
   "panel.button.restart": "↻ 再起動",
@@ -49,7 +44,6 @@
   "panel.button.browser": "ブラウザ",
   "panel.button.config": "設定",
   "panel.button.quit": "閉じる",
-
   "panel.starting": "{name} を開始中…",
   "panel.started": "{name} を開始しました",
   "panel.stopping": "{name} を停止中…",
@@ -67,12 +61,10 @@
   "panel.config_reloaded": "設定を再読み込みしました。",
   "panel.error": "エラー: {error}",
   "panel.refresh_error": "状態取得エラー: {error}",
-
   "error.port_in_use": "{name}: ポート {port} はすでに別のプロセスが使用しています。",
   "error.config_bad_stop_timeout": "{path}: {name} の stop_timeout は 0 以上の秒数 (数値) にしてください。",
   "notice.panel_crashed": "エラーのためダッシュボードが終了しました。詳細: {log}",
   "panel.unexpected_error": "予期しないエラー: {error} (詳細: {log})",
-
   "status.waiting": "待機中",
   "error.config_bad_start_timeout": "{path}: {name} の start_timeout は 0 以上の秒数 (数値) にしてください。",
   "error.config_bad_depends_on": "{path}: {name} の depends_on はサービス名のリストにしてください。",
@@ -84,5 +76,8 @@
   "panel.more_below": "▼ ほか {count} 件",
   "reason.port_in_use": "ポート使用中",
   "reason.dependency_failed": "依存サービスが失敗",
-  "reason.timeout": "依存サービスの待機がタイムアウト"
+  "reason.timeout": "依存サービスの待機がタイムアウト",
+  "error.config_not_object": "{path}: 最上位は JSON オブジェクトである必要があります",
+  "error.config_bad_services": "{path}: \"services\" はリストである必要があります",
+  "error.config_bad_port": "{path}: サービス \"{name}\" の port は 1〜65535 の数値である必要があります"
 }

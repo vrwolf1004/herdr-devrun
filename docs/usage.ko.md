@@ -49,7 +49,7 @@ herdr는 액션 id 중복을 허용하지 않는다. 그래서 OS별 실행기(`
 |---|---|---|
 | `herdr-devrun.init` | `herdr-devrun.init-windows` | 설정 파일 초안 만들기 |
 | `herdr-devrun.up` | `herdr-devrun.up-windows` | 서비스 띄우기 |
-| `herdr-devrun.run` | `herdr-devrun.run-windows` | 서비스 띄우기(`up`과 같은 동작, 아직 `herdr-plugin.toml`에는 없음) |
+| `herdr-devrun.run` | `herdr-devrun.run-windows` | 서비스 띄우기(`up`과 같은 동작) |
 | `herdr-devrun.down` | `herdr-devrun.down-windows` | 서비스 내리기 |
 | `herdr-devrun.restart` | `herdr-devrun.restart-windows` | 다시 띄우기 |
 | `herdr-devrun.panel` | `herdr-devrun.panel-windows` | 대시보드 열기 |
@@ -163,7 +163,7 @@ herdr server reload-config  # 실행 중인 서버에 반영
 
 | 하고 싶은 것 | 액션 | 동작 |
 |---|---|---|
-| 서비스 띄우기 | `up` (또는 `run`, 추가 예정 별칭) | 안 떠 있는 서비스를 `depends_on` 순서대로 탭에 실행. 모두 떠 있으면 그 탭으로 이동 |
+| 서비스 띄우기 | `up` (또는 `run`, 같은 액션) | 안 떠 있는 서비스를 `depends_on` 순서대로 탭에 실행. 모두 떠 있으면 그 탭으로 이동 |
 | 서비스 내리기 | `down` | 각 pane에 Ctrl+C → 프로세스가 끝나면(최대 `stop_timeout`) 탭 닫기 |
 | 다시 띄우기 | `restart` | down 후 up. 설정 파일을 고친 뒤 반영할 때도 쓴다 |
 

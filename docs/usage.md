@@ -52,7 +52,7 @@ The table uses Linux/macOS IDs. **On Windows, append `-windows`.**
 |---|---|---|
 | `herdr-devrun.init` | `herdr-devrun.init-windows` | Create a draft configuration file |
 | `herdr-devrun.up` | `herdr-devrun.up-windows` | Start services |
-| `herdr-devrun.run` | `herdr-devrun.run-windows` | Start services (same behavior as `up`; not yet in `herdr-plugin.toml`) |
+| `herdr-devrun.run` | `herdr-devrun.run-windows` | Start services (same behavior as `up`) |
 | `herdr-devrun.down` | `herdr-devrun.down-windows` | Stop services |
 | `herdr-devrun.restart` | `herdr-devrun.restart-windows` | Restart services |
 | `herdr-devrun.panel` | `herdr-devrun.panel-windows` | Open the dashboard |
@@ -167,7 +167,7 @@ Writing tips:
 
 | Goal | Action | Behavior |
 |---|---|---|
-| Start services | `up` (or `run`, planned alias) | Start services that are not running, in `depends_on` order. If all are running, switch to their tab |
+| Start services | `up` (or `run`, same action) | Start services that are not running, in `depends_on` order. If all are running, switch to their tab |
 | Stop services | `down` | Send Ctrl+C to each pane, wait for processes to exit (up to `stop_timeout`), then close the tab |
 | Restart | `restart` | Run down, then up. Also use it to apply configuration changes |
 

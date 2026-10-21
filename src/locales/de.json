@@ -9,7 +9,6 @@
   "notice.init_detected": "{count} Dienst(e) erkannt",
   "notice.init_example": "nichts erkannt, mit Beispiel gefüllt",
   "notice.init_created": "{path} erstellt ({detail}). Bitte Inhalt prüfen.",
-
   "error.herdr_failed": "herdr {command} fehlgeschlagen: {detail}",
   "error.pane_id_missing": "Pane-ID nicht gefunden: {result}",
   "error.start_dir_unknown": "Startordner unbekannt. Aus einem Pane starten oder --dir angeben.",
@@ -21,17 +20,14 @@
   "error.service_dir_missing": "[{name}] Ordner nicht gefunden: {path}",
   "error.unknown_action": "Unbekannte Aktion: {action}",
   "error.unknown_command": "Unbekannter Befehl: {command}",
-
   "cli.dir_help": "Startordner anstelle des Pane-cwd",
   "cli.panel_dir_help": "Projektordner (Standard: DEVRUN_PROJECT)",
   "cli.panel_dir_required": "DEVRUN_PROJECT oder --dir ist erforderlich.",
-
   "status.running": "Läuft",
   "status.starting": "Startet",
   "status.exited": "Beendet",
   "status.stopped": "Gestoppt",
   "status.working": "In Arbeit",
-
   "panel.running_count": "{running}/{total} laufen",
   "panel.header.status": "Status",
   "panel.header.service": "Dienst",
@@ -40,7 +36,6 @@
   "panel.log_title_empty": "Log",
   "panel.not_running": "(läuft nicht)",
   "panel.footer": "↑↓ wählen · Enter starten/stoppen · r neu starten · a/x alle starten/stoppen · o Browser · e Konfig · q schließen",
-
   "panel.button.start": "▶ Starten",
   "panel.button.stop": "■ Stoppen",
   "panel.button.restart": "↻ Neustart",
@@ -49,7 +44,6 @@
   "panel.button.browser": "Browser",
   "panel.button.config": "Konfig",
   "panel.button.quit": "Schließen",
-
   "panel.starting": "{name} wird gestartet…",
   "panel.started": "{name} gestartet",
   "panel.stopping": "{name} wird gestoppt…",
@@ -67,12 +61,10 @@
   "panel.config_reloaded": "Konfiguration neu geladen.",
   "panel.error": "Fehler: {error}",
   "panel.refresh_error": "Statusfehler: {error}",
-
   "error.port_in_use": "{name}: Port {port} wird bereits von einem anderen Prozess verwendet.",
   "error.config_bad_stop_timeout": "{path}: stop_timeout von {name} muss eine Zahl in Sekunden sein (0 oder mehr).",
   "notice.panel_crashed": "Das Dashboard wurde wegen eines Fehlers beendet. Details: {log}",
   "panel.unexpected_error": "Unerwarteter Fehler: {error} (Details: {log})",
-
   "status.waiting": "Wartet",
   "error.config_bad_start_timeout": "{path}: start_timeout von {name} muss eine Zahl in Sekunden sein (0 oder mehr).",
   "error.config_bad_depends_on": "{path}: depends_on von {name} muss eine Liste von Dienstnamen sein.",
@@ -84,5 +76,8 @@
   "panel.more_below": "▼ {count} weitere",
   "reason.port_in_use": "Port belegt",
   "reason.dependency_failed": "Abhängigkeit fehlgeschlagen",
-  "reason.timeout": "Zeitlimit beim Warten auf Abhängigkeiten"
+  "reason.timeout": "Zeitlimit beim Warten auf Abhängigkeiten",
+  "error.config_not_object": "{path}: die oberste Ebene muss ein JSON-Objekt sein",
+  "error.config_bad_services": "{path}: \"services\" muss eine Liste sein",
+  "error.config_bad_port": "{path}: Dienst \"{name}\" braucht einen Port zwischen 1 und 65535"
 }

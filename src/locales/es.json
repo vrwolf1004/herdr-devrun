@@ -9,7 +9,6 @@
   "notice.init_detected": "{count} servicio(s) detectado(s)",
   "notice.init_example": "no se detectó nada, se rellenó con un ejemplo",
   "notice.init_created": "Se creó {path} ({detail}). Revise su contenido.",
-
   "error.herdr_failed": "Falló herdr {command}: {detail}",
   "error.pane_id_missing": "No se encontró el id del pane: {result}",
   "error.start_dir_unknown": "No se pudo determinar la carpeta de inicio. Ejecútelo desde un pane o use --dir.",
@@ -21,17 +20,14 @@
   "error.service_dir_missing": "[{name}] no se encontró la carpeta: {path}",
   "error.unknown_action": "Acción desconocida: {action}",
   "error.unknown_command": "Comando desconocido: {command}",
-
   "cli.dir_help": "carpeta de inicio que se usa en lugar del cwd del pane",
   "cli.panel_dir_help": "carpeta del proyecto (por defecto: DEVRUN_PROJECT)",
   "cli.panel_dir_required": "Se requiere DEVRUN_PROJECT o --dir.",
-
   "status.running": "En ejecución",
   "status.starting": "Iniciando",
   "status.exited": "Finalizado",
   "status.stopped": "Detenido",
   "status.working": "Procesando",
-
   "panel.running_count": "{running}/{total} en ejecución",
   "panel.header.status": "Estado",
   "panel.header.service": "Servicio",
@@ -40,7 +36,6 @@
   "panel.log_title_empty": "Registro",
   "panel.not_running": "(no está en ejecución)",
   "panel.footer": "↑↓ elegir · Enter iniciar/detener · r reiniciar · a/x iniciar/detener todo · o navegador · e config · q cerrar",
-
   "panel.button.start": "▶ Iniciar",
   "panel.button.stop": "■ Detener",
   "panel.button.restart": "↻ Reiniciar",
@@ -49,7 +44,6 @@
   "panel.button.browser": "Navegador",
   "panel.button.config": "Config",
   "panel.button.quit": "Cerrar",
-
   "panel.starting": "Iniciando {name}…",
   "panel.started": "{name} iniciado",
   "panel.stopping": "Deteniendo {name}…",
@@ -67,12 +61,10 @@
   "panel.config_reloaded": "Configuración recargada.",
   "panel.error": "Error: {error}",
   "panel.refresh_error": "Error de estado: {error}",
-
   "error.port_in_use": "{name}: el puerto {port} ya está en uso por otro proceso.",
   "error.config_bad_stop_timeout": "{path}: stop_timeout de {name} debe ser un número de segundos (0 o más).",
   "notice.panel_crashed": "El panel se detuvo por un error. Detalles: {log}",
   "panel.unexpected_error": "Error inesperado: {error} (detalles: {log})",
-
   "status.waiting": "En espera",
   "error.config_bad_start_timeout": "{path}: start_timeout de {name} debe ser un número de segundos (0 o más).",
   "error.config_bad_depends_on": "{path}: depends_on de {name} debe ser una lista de nombres de servicios.",
@@ -84,5 +76,8 @@
   "panel.more_below": "▼ {count} más",
   "reason.port_in_use": "puerto en uso",
   "reason.dependency_failed": "falló una dependencia",
-  "reason.timeout": "tiempo de espera de dependencias agotado"
+  "reason.timeout": "tiempo de espera de dependencias agotado",
+  "error.config_not_object": "{path}: el nivel superior debe ser un objeto JSON",
+  "error.config_bad_services": "{path}: \"services\" debe ser una lista",
+  "error.config_bad_port": "{path}: el servicio \"{name}\" necesita un puerto entre 1 y 65535"
 }

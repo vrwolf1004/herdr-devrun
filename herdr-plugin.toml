@@ -19,6 +19,13 @@ contexts = ["pane", "workspace"]
 command = ["python3", "-X", "utf8", "src/devrun.py", "up"]
 
 [[actions]]
+id = "run"
+title = "devrun: start services"
+platforms = ["linux", "macos"]
+contexts = ["pane", "workspace"]
+command = ["python3", "-X", "utf8", "src/devrun.py", "up"]
+
+[[actions]]
 id = "down"
 title = "devrun: stop services"
 platforms = ["linux", "macos"]
@@ -58,6 +65,13 @@ command = ["python3", "-X", "utf8", "src/panel.py"]
 
 [[actions]]
 id = "up-windows"
+title = "devrun: start services"
+platforms = ["windows"]
+contexts = ["pane", "workspace"]
+command = ["python", "-X", "utf8", "src/devrun.py", "up"]
+
+[[actions]]
+id = "run-windows"
 title = "devrun: start services"
 platforms = ["windows"]
 contexts = ["pane", "workspace"]

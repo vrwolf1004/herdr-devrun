@@ -9,7 +9,6 @@
   "notice.init_detected": "detected {count} service(s)",
   "notice.init_example": "nothing detected, filled with an example",
   "notice.init_created": "Created {path} ({detail}). Please review it.",
-
   "error.herdr_failed": "herdr {command} failed: {detail}",
   "error.pane_id_missing": "Could not find a pane id: {result}",
   "error.start_dir_unknown": "Cannot determine the start folder. Run this from a pane or pass --dir.",
@@ -21,17 +20,14 @@
   "error.service_dir_missing": "[{name}] folder not found: {path}",
   "error.unknown_action": "Unknown action: {action}",
   "error.unknown_command": "Unknown command: {command}",
-
   "cli.dir_help": "start folder to use instead of the pane cwd",
   "cli.panel_dir_help": "project folder (default: DEVRUN_PROJECT)",
   "cli.panel_dir_required": "DEVRUN_PROJECT or --dir is required.",
-
   "status.running": "Running",
   "status.starting": "Starting",
   "status.exited": "Exited",
   "status.stopped": "Stopped",
   "status.working": "Working",
-
   "panel.running_count": "{running}/{total} running",
   "panel.header.status": "Status",
   "panel.header.service": "Service",
@@ -40,7 +36,6 @@
   "panel.log_title_empty": "Log",
   "panel.not_running": "(not running)",
   "panel.footer": "↑↓ select · Enter start/stop · r restart · a/x start/stop all · o browser · e config · q close",
-
   "panel.button.start": "▶ Start",
   "panel.button.stop": "■ Stop",
   "panel.button.restart": "↻ Restart",
@@ -49,7 +44,6 @@
   "panel.button.browser": "Browser",
   "panel.button.config": "Config",
   "panel.button.quit": "Close",
-
   "panel.starting": "Starting {name}…",
   "panel.started": "{name} started",
   "panel.stopping": "Stopping {name}…",
@@ -67,12 +61,10 @@
   "panel.config_reloaded": "Config reloaded.",
   "panel.error": "Error: {error}",
   "panel.refresh_error": "Status error: {error}",
-
   "error.port_in_use": "{name}: port {port} is already in use by another process.",
   "error.config_bad_stop_timeout": "{path}: stop_timeout of {name} must be a number of seconds (0 or more).",
   "notice.panel_crashed": "The dashboard stopped because of an error. Details: {log}",
   "panel.unexpected_error": "Unexpected error: {error} (details: {log})",
-
   "status.waiting": "Waiting",
   "error.config_bad_start_timeout": "{path}: start_timeout of {name} must be a number of seconds (0 or more).",
   "error.config_bad_depends_on": "{path}: depends_on of {name} must be a list of service names.",
@@ -84,5 +76,8 @@
   "panel.more_below": "▼ {count} more",
   "reason.port_in_use": "port in use",
   "reason.dependency_failed": "dependency failed",
-  "reason.timeout": "timed out waiting for dependencies"
+  "reason.timeout": "timed out waiting for dependencies",
+  "error.config_not_object": "{path}: the top level must be a JSON object",
+  "error.config_bad_services": "{path}: \"services\" must be a list",
+  "error.config_bad_port": "{path}: service \"{name}\" needs a port number from 1 to 65535"
 }

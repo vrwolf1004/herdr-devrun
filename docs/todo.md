@@ -6,12 +6,12 @@
 
 ## 높음
 
-- [ ] **설정·상태 파일 검증과 복구**
+- [x] **설정·상태 파일 검증과 복구** (`tests/test_state_recovery.py`: 최상위 형식, services 목록·항목 형식, port 범위, 손상된 상태 버림, 원자적 기록)
   - 설정 JSON의 최상위 형식, 서비스 항목, 포트 범위를 읽을 때 검증하고 오류를 사용자가 이해할 수 있게 보고한다.
   - 상태 파일은 직접 덮어써서 중단 시 손상될 수 있고, 읽기 오류를 복구하지 못한다. 원자적 기록과 손상 상태 복구 테스트를 추가한다.
-- [ ] **서비스 시작 실패 시 pane 상태 정리**
+- [x] **서비스 시작 실패 시 pane 상태 정리** (실패하면 방금 만든 탭이나 pane 을 닫고 상태를 되돌림, `tests/test_state_recovery.py`)
   - pane 실행 명령이 실패하면 먼저 저장한 상태에 존재하지 않는 pane이 남을 수 있다. 실패 시 상태를 되돌리고 생성 pane을 정리하는 테스트를 추가한다.
-- [ ] **프로세스 감지의 OS별 회귀 테스트**
+- [x] **프로세스 감지의 OS별 회귀 테스트** (`tests/test_procs.py`, `tests/test_process_detection.py`: 사라진 프로세스, 순환, wrapper, Linux `/proc`·macOS `ps`·Windows 파싱을 가짜 데이터로, 종료 제한 시간)
   - wrapper 프로세스, 사라진 프로세스, 순환 관계, 종료 제한 시간 등 `procs.py`의 OS별 경로를 가짜 프로세스 데이터로 검증한다.
 
 - [x] 1. 한글 입력 상태에서 대시보드 단축키 동작
@@ -175,7 +175,7 @@
 
 ### 13. 버전 태그
 
-- `herdr-plugin.toml`의 `version`(현재 0.3.0)과 같은 git 태그(`v0.3.0`)를 단다.
+- `herdr-plugin.toml`의 `version`과 같은 git 태그를 단다. 현재 manifest 는 0.5.1 이고 태그는 `v0.3.0`까지만 있다. 0.5.1 태그는 다음 릴리스 때 단다.
 - 사용자는 `herdr plugin install vrwolf1004/herdr-devrun --ref v0.3.0`으로 버전을 고정할 수 있다.
 - 이후 변경 시 `version`과 태그를 함께 올린다.
 
@@ -194,7 +194,7 @@
 
 ## 추가 개선 (2026-10-15 문서 검토)
 
-### 16. `run` 액션 정리 (문서와 manifest 불일치)
+### 16. `run` 액션 정리 (문서와 manifest 불일치) — 완료: `run`/`run-windows`를 manifest 에 추가했고 `up`과 같은 명령을 씁니다.
 
 - **현상**: [usage.md](usage.md)와 [usage.ko.md](usage.ko.md)에 `herdr-devrun.run`(`up`과 같은 동작)을 추가했지만 `herdr-plugin.toml`에는 없어서, 문서의 액션이 실제로는 실행되지 않는다.
 - **개선안**: 둘 중 하나로 맞춘다.
@@ -203,24 +203,14 @@
 - **범위**: `herdr-plugin.toml`(a) 또는 `docs/usage.md`, `docs/usage.ko.md`(b)
 - **확인**: (a) `herdr plugin unlink` 후 `link`하고 팔레트에 `run`이 보이는지, 실행 시 서비스가 `up`과 같게 뜨는지 본다. (b) 문서에 `run`이 남아 있지 않은지 `grep`으로 확인한다.
 
-### 17. agents 패널에 서비스 상태 표시 (feedbag 방식)
-
-- **현상**: devrun 상태는 대시보드 pane을 열어야만 보인다. herdr agents 패널에서 한눈에 볼 수 없다.
-- **원인**: devrun은 `pane.report_agent`, `pane.report_metadata`, `workspace.move`를 쓰지 않는다. 하단 고정 블록을 만드는 `herdr-dock` 규칙도 따르지 않는다([herdr-ai-feedbag/docs/architecture.md](../../herdr-ai-feedbag/docs/architecture.md)의 "herdr-dock 공용 규칙" 참고).
-- **개선안**:
-  - `herdr-dock` workspace에 devrun 전용 pane을 하나 두고 가짜 agent(`devrun`)로 등록한다. 빈 pane이 있으면 재사용하고, 없으면 `pane split --direction down`으로 나눈다.
-  - 상태는 `$dr_*` 토큰으로 올린다(예: `2/3 실행 중`). 값이 없으면 herdr가 그리지 않는다.
-  - 5초마다 agent를 다시 등록하고 dock을 맨 뒤로 옮긴다.
-  - 이 pane을 host로 쓸지, 대시보드와 분리할지는 정한다. 대시보드를 그대로 쓰면 pane을 닫을 때 상태 보고도 멈춘다. 별도 host pane을 권장한다.
-  - 끝날 때는 자기 pane만 닫고, dock에 다른 pane이 없을 때만 workspace를 닫는다.
-- **설정 형식**: 없음 (기본 동작). 끄는 설정이 필요하면 `⚙`로 따로 정한다.
-- **범위**: 새 `src/dock.py`(또는 `core.py` 추가), `src/herdr_api.py`(feedbag 것을 복사, 공유 모듈은 없음), `devrun.py`(`up`/`down` 후 갱신), 문서
-- **확인**: 실제 herdr 0.9.0에서 `pane.report_agent`, `workspace.move`의 응답 형식을 먼저 확인한다. 그 다음 agents 패널에 `devrun` 행이 맨 아래에 뜨고, 서비스 시작·중지 때 숫자가 바뀌는지 본다. Windows named pipe 경로도 확인한다.
+### 17. agents 패널에 서비스 상태 표시 — 취소
+- devrun 은 도크(herdr-dock)에 블록으로 붙지 않는 독립 플러그인이다. 서비스 상태는 대시보드 pane 에서 본다.
+- 도크 블록, `dr_status` 토큰, 소개 칸 연동은 구현하지 않는다. 구현은 되돌렸다.
 
 ### 18. 버전·설치 경로 문서 정리
 
 - **현상**: [todo.md](todo.md) 13번은 버전을 `0.2.0`(`v0.2.0`)이라고 적었지만, `herdr-plugin.toml`은 `0.3.0`이다. 13번의 설치 예시 저장소 이름도 `herdrPlugin-devrun`인데, usage.md와 README는 `herdr-devrun`을 쓴다.
-- **개선안**: 13번 본문을 현재 값(`0.3.0`, `vrwolf1004/herdr-devrun`)으로 고친다. 태그는 `v0.3.0`이 실제로 있는지 `git tag`로 확인한 뒤 없으면 만든다.
+- **개선안**: 13번 본문을 현재 값(`0.3.0`, `vrwolf1004/herdr-devrun`)으로 고친다. 태그는 `v0.3.0`이 실제로 있는지 `git tag`로 확인한 뒤 없으면 만든다. → 완료: 13번 본문을 현재 값으로 고치고, `v0.3.0` 태그가 있는 것을 `git tag`로 확인했다.
 - **범위**: `docs/todo.md`, 필요하면 태그
 - **확인**: `git tag`에 `v0.3.0`이 있는지, 문서의 버전과 `herdr-plugin.toml`의 `version`이 같은지 본다.
 

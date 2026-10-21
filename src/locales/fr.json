@@ -9,7 +9,6 @@
   "notice.init_detected": "{count} service(s) détecté(s)",
   "notice.init_example": "rien détecté, rempli avec un exemple",
   "notice.init_created": "{path} créé ({detail}). Vérifiez son contenu.",
-
   "error.herdr_failed": "Échec de herdr {command} : {detail}",
   "error.pane_id_missing": "Impossible de trouver l'id du pane : {result}",
   "error.start_dir_unknown": "Dossier de départ inconnu. Lancez depuis un pane ou utilisez --dir.",
@@ -21,17 +20,14 @@
   "error.service_dir_missing": "[{name}] dossier introuvable : {path}",
   "error.unknown_action": "Action inconnue : {action}",
   "error.unknown_command": "Commande inconnue : {command}",
-
   "cli.dir_help": "dossier de départ à utiliser à la place du cwd du pane",
   "cli.panel_dir_help": "dossier du projet (par défaut : DEVRUN_PROJECT)",
   "cli.panel_dir_required": "DEVRUN_PROJECT ou --dir est requis.",
-
   "status.running": "En cours",
   "status.starting": "Démarrage",
   "status.exited": "Terminé",
   "status.stopped": "Arrêté",
   "status.working": "Traitement",
-
   "panel.running_count": "{running}/{total} en cours",
   "panel.header.status": "État",
   "panel.header.service": "Service",
@@ -40,7 +36,6 @@
   "panel.log_title_empty": "Journal",
   "panel.not_running": "(pas en cours)",
   "panel.footer": "↑↓ choisir · Entrée démarrer/arrêter · r redémarrer · a/x tout démarrer/arrêter · o navigateur · e config · q fermer",
-
   "panel.button.start": "▶ Démarrer",
   "panel.button.stop": "■ Arrêter",
   "panel.button.restart": "↻ Redémarrer",
@@ -49,7 +44,6 @@
   "panel.button.browser": "Navigateur",
   "panel.button.config": "Config",
   "panel.button.quit": "Fermer",
-
   "panel.starting": "Démarrage de {name}…",
   "panel.started": "{name} démarré",
   "panel.stopping": "Arrêt de {name}…",
@@ -67,12 +61,10 @@
   "panel.config_reloaded": "Configuration relue.",
   "panel.error": "Erreur : {error}",
   "panel.refresh_error": "Erreur d'état : {error}",
-
   "error.port_in_use": "{name} : le port {port} est déjà utilisé par un autre processus.",
   "error.config_bad_stop_timeout": "{path} : stop_timeout de {name} doit être un nombre de secondes (0 ou plus).",
   "notice.panel_crashed": "Le tableau de bord s'est arrêté à cause d'une erreur. Détails : {log}",
   "panel.unexpected_error": "Erreur inattendue : {error} (détails : {log})",
-
   "status.waiting": "En attente",
   "error.config_bad_start_timeout": "{path} : start_timeout de {name} doit être un nombre de secondes (0 ou plus).",
   "error.config_bad_depends_on": "{path} : depends_on de {name} doit être une liste de noms de services.",
@@ -84,5 +76,8 @@
   "panel.more_below": "▼ {count} de plus",
   "reason.port_in_use": "port utilisé",
   "reason.dependency_failed": "échec d'une dépendance",
-  "reason.timeout": "délai d'attente des dépendances dépassé"
+  "reason.timeout": "délai d'attente des dépendances dépassé",
+  "error.config_not_object": "{path} : le niveau supérieur doit être un objet JSON",
+  "error.config_bad_services": "{path} : \"services\" doit être une liste",
+  "error.config_bad_port": "{path} : le service \"{name}\" doit avoir un port entre 1 et 65535"
 }

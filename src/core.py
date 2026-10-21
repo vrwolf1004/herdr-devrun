@@ -124,13 +124,19 @@ def read_config(config_path):
         config = json.loads(config_path.read_text(encoding="utf-8-sig"))
     except json.JSONDecodeError as error:
         raise DevrunError(t("error.config_json", path=config_path, error=error)) from error
+    if not isinstance(config, dict):
+        raise DevrunError(t("error.config_not_object", path=config_path))
     services = config.get("services") or []
+    if not isinstance(services, list):
+        raise DevrunError(t("error.config_bad_services", path=config_path))
     if not services:
         raise DevrunError(t("error.config_no_services", path=config_path))
     names = set()
     for service in services:
-        if not service.get("name") or not service_command(service):
+        if not isinstance(service, dict) or not service.get("name") or not service_command(service):
             raise DevrunError(t("error.config_missing_fields", path=config_path))
+        if "port" in service and not _is_port(service["port"]):
+            raise DevrunError(t("error.config_bad_port", path=config_path, name=service["name"]))
         if service["name"] in names:
             raise DevrunError(t("error.config_duplicate_name", path=config_path, name=service["name"]))
         names.add(service["name"])
@@ -154,6 +160,10 @@ def read_config(config_path):
 
 def _is_seconds(value):
     return not isinstance(value, bool) and isinstance(value, (int, float)) and value >= 0
+
+
+def _is_port(value):
+    return not isinstance(value, bool) and isinstance(value, int) and 1 <= value <= 65535
 
 
 def _dependency_cycle(services):
@@ -238,15 +248,26 @@ def read_state(project_dir):
     path = state_path(project_dir)
     if not path.is_file():
         return None
-    state = json.loads(path.read_text(encoding="utf-8"))
-    state["panes"] = [pane for pane in state.get("panes", []) if pane]
+    try:
+        state = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        # 손상된 상태는 버린다. 살아 있는 pane 은 다음 시작에서 다시 만들어진다.
+        path.unlink(missing_ok=True)
+        return None
+    if not isinstance(state, dict):
+        path.unlink(missing_ok=True)
+        return None
+    state["panes"] = [pane for pane in state.get("panes", []) if isinstance(pane, dict) and pane]
     return state
 
 
 def write_state(project_dir, state):
     path = state_path(project_dir)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    # 임시 파일에 쓰고 바꿔 끼운다. 중간에 멈춰도 부분 JSON 이 남지 않는다.
+    temp = path.with_name(path.name + ".tmp")
+    temp.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
+    os.replace(temp, path)
 
 
 def remove_state(project_dir):
@@ -312,6 +333,7 @@ def start_service(project_dir, config, service, focus=False):
         remove_state(project_dir)
         state = None
 
+    made_tab = state is None
     if state is None:
         label = tab_label(project_dir, config)
         created = herdr("tab", "create", "--cwd", folder, "--label", label,
@@ -326,7 +348,18 @@ def start_service(project_dir, config, service, focus=False):
 
     state["panes"].append({"name": service["name"], "pane_id": pane_id})
     write_state(project_dir, state)
-    run_in_pane(pane_id, service)
+    try:
+        run_in_pane(pane_id, service)
+    except DevrunError:
+        # 명령을 입력하지 못했으면 방금 만든 것만 되돌린다. 상태에 없는 pane 이 남지 않게 한다.
+        if made_tab:
+            herdr("tab", "close", state["tab_id"], check=False)
+            remove_state(project_dir)
+        else:
+            herdr("pane", "close", pane_id, check=False)
+            state["panes"] = [pane for pane in state["panes"] if pane["pane_id"] != pane_id]
+            write_state(project_dir, state)
+        raise
     return True
 
 
