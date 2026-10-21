@@ -87,7 +87,7 @@ herdr server reload-config  # Apply it to the running server
 ```
 
 - Check that the keys do not conflict with existing bindings or other plugins.
-- To run an action without a shortcut: `herdr plugin action invoke herdr-devrun.up` (uses the currently focused pane).
+- To run an action without a shortcut: `herdr plugin action invoke up --plugin herdr-devrun` (Windows: `up-windows`) (uses the currently focused pane).
 
 ## 3. Create a project configuration
 

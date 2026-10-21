@@ -84,7 +84,7 @@ herdr server reload-config  # 실행 중인 서버에 반영
 ```
 
 - 키를 정하기 전에 기존 바인딩이나 다른 플러그인 키와 겹치지 않는지 확인한다.
-- 단축키 없이 실행: `herdr plugin action invoke herdr-devrun.up` (지금 포커스된 pane 기준)
+- 단축키 없이 실행: `herdr plugin action invoke up --plugin herdr-devrun` (Windows: `up-windows`) (지금 포커스된 pane 기준)
 
 ## 3. 프로젝트에 설정 파일 만들기
 
