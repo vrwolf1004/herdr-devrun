@@ -10,6 +10,22 @@ Start and manage a project's development services in separate panes from one her
 
 The dashboard shows service status, ports, and recent logs, and lets you start, stop, restart, or open a service URL. It opens to the right of the current pane; Ctrl+C returns to the shell.
 
+```text
+ ▣ devrun · my-project                                  2/3 running
+
+   Status      Service                                    Port
+ ▸ ● Running   backend                                    :8080
+   ◐ Starting  frontend                                   :5173
+   ○ Stopped   worker
+
+  ■ Stop   ↻ Restart   Start all   Stop all   Browser   Config   Close
+
+─ Logs · backend ──────────────────────────────────────────────
+ Started Application in 4.2 seconds
+```
+
+This plugin uses a project dashboard rather than an Agents-sidebar block.
+
 ## Installation
 
 ```sh
