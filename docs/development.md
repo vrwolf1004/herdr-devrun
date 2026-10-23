@@ -16,6 +16,7 @@ herdr-devrun/
 │   ├── procs.py                 프로세스 트리와 포트 조사
 │   ├── term.py                  OS별 터미널 입출력 (대체 화면, 키 읽기)
 │   ├── panel.py                 대시보드 (화면 상태, 그리기, 입력, 명령)
+│   ├── presets.py               서비스 추가 프리셋 (분류·기술별 명령과 포트)
 │   ├── i18n.py                  언어 결정과 t(key, **values)
 │   └── locales/<언어>.json      화면 문구 (en, ko, ru, fr, es, de, ja)
 └── tests/                       unittest 테스트
@@ -26,7 +27,8 @@ herdr-devrun/
     ├── test_procs.py            프로세스 파싱
     ├── test_process_detection.py 프로세스 트리와 종료 대기
     ├── test_state_recovery.py   상태 파일과 시작 실패 복구
-    └── test_term.py             터미널 입력 처리
+    ├── test_term.py             터미널 입력 처리
+    └── (기능별 test_*.py)        서비스 추가·닫기·중지, 대시보드 버튼과 확인 창, 시작 복구 등
 ```
 
 ## 테스트 실행

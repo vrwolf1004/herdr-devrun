@@ -156,6 +156,7 @@ herdr server reload-config  # Apply it to the running server
 
 Writing tips:
 
+- Place the file in the project root, or in any folder above the folder you run actions from. Keeping it in a `.run` folder is one option, not a requirement.
 - In JSON strings, escape `\` as `\\` and `"` as `\"`. For example: `".\\gradlew.bat bootRun"`.
 - Join multiple commands with `;` (supported by PowerShell, bash, and zsh). For example: `"pnpm install; pnpm run dev"`.
 - If commands differ by OS, put one in `command` and the other in `command_windows` or `command_unix`. If they are the same, use only `command`.
@@ -176,10 +177,15 @@ Writing tips:
 | Goal | Action | Behavior |
 |---|---|---|
 | Start services | `up` (or `run`, same action) | Start services that are not running, in `depends_on` order. If all are running, switch to their tab |
-| Stop services | `down` | Send Ctrl+C to each pane, wait for processes to exit (up to `stop_timeout`), then close the tab |
+| Stop services | `down` | Send Ctrl+C to each pane, wait for processes to exit (up to `stop_timeout`), close the project tab, and close the `devrun` space if no other tab is left |
 | Restart | `restart` | Run down, then up. Also use it to apply configuration changes |
 
 - Actions search for the configuration file by walking **up** from the folder of the pane where the action was run. They can be run from a subfolder within the project.
+- `down` (the action) closes the project's tab. The dashboard's Stop and Stop all keep the tab and panes (section 6).
+
+### Layout
+
+The services of a project run in one tab named after the project (or `tab` in the configuration). The tab is in a shared space (herdr workspace) named `devrun`; each project adds its own tab to that space. The first pane of the tab is the dashboard (`control-box`), and service panes are placed to its right.
 - `up` starts only services that are not already running. If some are running, the remaining ones are added to the same tab.
 - Use the dashboard (section 6) to manage an individual service.
 - You can close a tab or pane manually. The next run detects removed panes and cleans up the state.
@@ -190,6 +196,7 @@ Writing tips:
 - If a dependency exits (✕), a waiting service is not started and is reported as "dependency failed". A service just started by the current plan is given a 5-second grace period before it can be considered failed.
 - If a dependency is not ready within `start_timeout` (default: 120 seconds), the dependent service is not started and is reported as timed out.
 - Services that could not start are reported in a notification (and in the dashboard's message line), for example: `web (dependency failed), late (timed out waiting for dependencies)`.
+- A service whose process is still running is skipped by start-all and listed as "Already running" in the completion message, separately from the services that failed.
 - Starting a **single** service from the dashboard does not wait for its dependencies; the user explicitly selected it.
 
 ### Port conflicts
@@ -205,13 +212,13 @@ Writing tips:
 
 ### Stop timeout
 
-- After sending Ctrl+C, the plugin checks every 0.2 seconds whether the process beneath the pane shell has exited. It closes the pane/tab as soon as it exits, or after `stop_timeout` (default: 10 seconds). Remaining processes are terminated with the pane.
+- After sending Ctrl+C, the plugin checks every 0.2 seconds whether the process beneath the pane shell has exited. It stops waiting as soon as the process exits, or after `stop_timeout` (default: 10 seconds). Remaining processes are then closed with their pane.
 - Increase `stop_timeout` for services that need more time for a graceful shutdown, such as Spring Boot.
-- A Windows `.bat` file waiting at "Terminate batch job (Y/N)?" after Ctrl+C is treated as stopped.
+- While a stop waits, a Windows batch prompt such as "Terminate batch job (Y/N)?" is answered with `Y` and Enter, so `.bat` services such as `gradlew.bat` stop cleanly. Only a prompt that appears during the wait is answered.
 
 ## 6. Dashboard
 
-Run the `panel` action to split a pane to the right of the current pane and run the dashboard there. The pane uses the project root as its working directory. If a dashboard for the same project is already running, the action focuses its tab instead of opening another one.
+Run the `panel` action to open the dashboard in the project's tab, as the first pane (`control-box`) to the left of the services. If a dashboard for the same project is already in that tab, the action focuses it instead of opening another one.
 
 The dashboard runs as a command in the pane's shell. Pressing Ctrl+C stops it and returns to the shell prompt; it does not close the pane. The next `panel` action opens a fresh dashboard.
 
@@ -223,11 +230,13 @@ The dashboard runs as a command in the pane's shell. Pressing Ctrl+C stops it an
    ◐ Starting  frontend                                   :5173
    ○ Stopped   worker
 
-  ■ Stop   ↻ Restart   Start all   Stop all   Browser   Settings   Close
+  Start all   Stop all   Browser   Config   + Add   Close
 
 ─ Logs · backend ──────────────────────────────────────────────
  Started Application in 4.2 seconds
 ```
+
+Each service row ends with `▶ Start` or `■ Stop`, `✎ Edit`, `✕ Delete`, and `⊗` (close the pane). Below 72 columns these show as icons only (`▶ ■ ✎ ✕ ⊗`).
 
 ### Status
 
@@ -236,7 +245,7 @@ The dashboard runs as a command in the pane's shell. Pressing Ctrl+C stops it an
 | ● Running | Active | A process is running under the pane shell and, if configured, `port` is open. Without a port, only the process is checked |
 | ◐ Starting | Starting up | A process exists, but the configured `port` is not open yet |
 | ✕ Exited | Command finished | The pane remains, but only its shell is running. Check the logs for failure or completion |
-| ○ Stopped | Not running | No pane exists |
+| ○ Stopped | Not running | No process under the pane. After a stop, the pane may remain at the shell prompt, marked stopped |
 | ◔ Waiting | Waiting for `depends_on` during start-all | |
 | … Working | Dashboard is starting or stopping a service | |
 
@@ -245,28 +254,33 @@ The dashboard runs as a command in the pane's shell. Pressing Ctrl+C stops it an
 | Goal | Mouse | Key |
 |---|---|---|
 | Select a service | Click a row or use the wheel | `↑` `↓` `Home` `End` |
-| Start/stop selected service | Double-click a row or use the Start/Stop button | `Enter` |
-| Restart selected service | Restart button | `r` |
-| Start all / stop all | Buttons | `a` / `x` |
+| Start/stop selected service | Double-click a row, or the Start/Stop button on its row | `Enter` |
+| Restart selected service | none | `r` |
+| Edit a service | `✎ Edit` on its row | none |
+| Delete a service | `✕ Delete` on its row | none |
+| Close a service pane | `⊗` on its row | none |
+| Start all / stop all | Buttons on the bottom line | `a` / `x` |
 | Open the service URL | Browser button | `o` |
-| Open the configuration file | Settings button | `e` |
+| Open the configuration file | Config button | `e` |
 | Close dashboard | Close button | `q`, `Esc`, `Ctrl+C` |
 
-- Shortcuts also work while a Korean keyboard layout is active (`ㄱ=r`, `ㅁ=a`, `ㅌ=x`, `ㅐ=o`, `ㄷ=e`, `ㅂ=q`).
+- Shortcuts also work while a Korean keyboard layout is active (`ㄱ=r`, `ㅁ=a`, `ㅌ=x`, `ㅐ=o`, `ㄷ=e`, `ㅂ=q`). In a confirmation box, `ㅛ=y` and `ㅜ=n`.
 - Status and log previews refresh every second. The log preview shows the selected service's recent output; wrapped pane lines are displayed as their original single lines.
 - Start-all accepts input while it waits. Selecting Stop all during startup cancels remaining starts.
 - If the service list exceeds the screen, it scrolls with the selected row and shows `▲ n more` / `▼ n more` indicators.
 - At widths below 40 columns, the port column is hidden; below 30 columns, status names are replaced by icons.
+- Row buttons show words at 72 columns or wider, and icons below that. If the window is too narrow to fit them, they are hidden. Edit and Delete have no keyboard shortcut, so widen the window to use them.
 - Unexpected errors do not close the dashboard. A summary appears on the message line, with details in `panel.log` in the state directory.
 - Saving the configuration reloads it automatically. If it is invalid, an error appears and the previous configuration remains active.
-- The configuration opens with the OS default application (Windows: file association, or Notepad; macOS: `open`; Linux: `xdg-open`).
-- Stopping a service closes only its pane. Stopping the last service also closes the service tab.
-- Restart closes and recreates the pane. Windows batch files such as `gradlew.bat` may prompt "Terminate batch job?" after Ctrl+C, so the command is not run again in the same pane.
+- The configuration opens in Notepad on Windows (`notepad.exe`), with `open` on macOS, and with `xdg-open` on Linux.
+- Stop (`Enter`, or the Start/Stop button) stops that service's process and keeps its pane at the shell prompt, marked stopped. If the process does not exit within `stop_timeout`, the pane is closed. Stop all (`x`) does the same for every running service and keeps the tab and the control box.
+- Restart (`r`) stops the service and starts it again. A stopped or exited pane is reused: the command is entered again in the same pane. If the process did not exit within `stop_timeout`, the pane is closed and a new one is created.
+- Close (`⊗`) closes the service's pane after you confirm. A running process is stopped first. The tab and the control box stay.
 - Closing the dashboard does not stop services.
 
-### Add, edit, and delete services
+### Add, edit, delete, and close services
 
-The dashboard has three buttons: `+ Add`, `✎ Edit`, and `✕ Delete`. They have no keyboard shortcut. Each one opens a step-by-step form on the message line; the log preview is replaced by the choice list while you choose.
+**Add** is on the bottom line. **Edit**, **Delete**, and **Close** (`⊗`) are on each service row, and none of them has a keyboard shortcut. Add and Edit open a step-by-step form on the message line; the log preview is replaced by the choice list while you choose.
 
 **Add** asks these steps in order:
 
@@ -278,7 +292,9 @@ The whole configuration is validated after the last step. If validation fails (f
 
 **Edit** asks the same fields, starting from the current values. Settings the form does not show (for example `env` and timeouts) are kept as they are.
 
-**Delete** asks you to type `y` and press `Enter`. The service is also removed from the `depends_on` lists of other services. A running service cannot be deleted or renamed; stop it first.
+**Delete** opens a confirmation box, "Delete '<name>'?". Press `y` or click **Delete** to remove the service; press `n`, `Esc`, click **Cancel**, or click outside the box to keep it. The service is also removed from the `depends_on` lists of other services. A running service is not deleted; the bottom line says to stop it first.
+
+**Close** (`⊗`) opens a confirmation box, "Close '<name>' window?". Press `y` or click **Close** to close the service's pane; a running process is stopped first. The tab and the control box stay, so you can start the service again later.
 
 Presets are defined in `src/presets.py`. A preset's values are written as you see them, so check them before saving. When the Windows and Unix commands differ (for example Gradle's `gradlew.bat` and `./gradlew`), the service is saved with `command_windows` and `command_unix`. The command for the OS you are on comes from your edit; the other OS keeps the preset command.
 
@@ -351,6 +367,25 @@ Layout: `api` is on the left; `batch` and `web` are stacked from top to bottom o
 
 ```json
 { "name": "api", "command": "./gradlew bootRun --args=\"--server.port=8081\"", "port": 8081 }
+```
+
+### Example files (`docs/examples/`)
+
+Copy a file to your project folder as `.herdr-devrun.json`, then change the `C:/path/to/...` folders and the `<DUMMY_...>` values. Items marked **추정** (estimate) were not confirmed for your project; check them before relying on them.
+
+| File | Services | Estimated items |
+|---|---|---|
+| `ex_react_spring.json` | Spring Boot (Gradle, 8080) and React (pnpm, 5173) | none |
+| `ex_nextjs_php.json` | PHP built-in server (`php -S localhost:8000`) and Next.js (`pnpm run dev`, 3000, starts after php) | the PHP command and port are **추정** (use `php artisan serve` for Laravel) |
+| `ex_vue_aspnet.json` | ASP.NET Core (`dotnet run`, 5000) and Vue (`npm run dev`, 5173, starts after aspnet) | the ASP.NET port is **추정**: check `Properties/launchSettings.json`. 5173 is Vite's default |
+| `ex_django_db.json` | Redis (`redis-server`, 6379) and Django (`python manage.py runserver 8000`, starts after redis) | the Redis command and port are **추정** |
+| `ex_spring_only.json` | Spring Boot alone with Maven (`mvnw`, 8080) | 8080 is Spring's default: change it if `server.port` is set |
+
+Gradle instead of Maven for `ex_spring_only.json`: put these in the two command keys:
+
+```json
+"command_windows": ".\\gradlew.bat bootRun",
+"command_unix": "./gradlew bootRun"
 ```
 
 ## 8. Manual run (without herdr actions)

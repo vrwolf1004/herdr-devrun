@@ -1,0 +1,22 @@
+{
+  "tab": "my-site",
+  "services": [
+    {
+      "name": "php",
+      "cwd": "C:/path/to/my-php-be",
+      "command": "php -S localhost:8000",
+      "port": 8000,
+      "url": "http://localhost:8000"
+    },
+    {
+      "name": "nextjs",
+      "cwd": "C:/path/to/my-next-fe",
+      "command": "pnpm run dev",
+      "port": 3000,
+      "url": "http://localhost:3000",
+      "depends_on": [
+        "php"
+      ]
+    }
+  ]
+}

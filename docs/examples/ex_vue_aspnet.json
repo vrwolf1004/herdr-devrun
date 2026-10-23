@@ -1,0 +1,22 @@
+{
+  "tab": "my-vue-aspnet",
+  "services": [
+    {
+      "name": "aspnet",
+      "cwd": "C:/path/to/my-aspnet-be",
+      "command": "dotnet run",
+      "port": 5000,
+      "url": "http://localhost:5000"
+    },
+    {
+      "name": "vue",
+      "cwd": "C:/path/to/my-vue-fe",
+      "command": "npm run dev",
+      "port": 5173,
+      "url": "http://localhost:5173",
+      "depends_on": [
+        "aspnet"
+      ]
+    }
+  ]
+}

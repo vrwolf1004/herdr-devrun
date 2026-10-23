@@ -1,0 +1,29 @@
+{
+  "tab": "my-app",
+  "services": [
+    {
+      "name": "backend",
+      "cwd": "C:/path/to/my-spring-be",
+      "command_windows": "./gradlew.bat bootRun",
+      "command_unix": "./gradlew bootRun",
+      "port": 8080,
+      "url": "http://localhost:8080",
+      "env": {
+        "SPRING_PROFILES_ACTIVE": "local",
+        "DB_PASSWORD": "<DUMMY_DB_PASSWORD>"
+      },
+      "stop_timeout": 30
+    },
+    {
+      "name": "frontend",
+      "cwd": "C:/path/to/my-react-fe",
+      "command": "pnpm run dev",
+      "port": 5173,
+      "url": "http://localhost:5173",
+      "depends_on": [
+        "backend"
+      ],
+      "start_timeout": 300
+    }
+  ]
+}

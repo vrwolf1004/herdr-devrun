@@ -1,0 +1,24 @@
+{
+  "tab": "my-django",
+  "services": [
+    {
+      "name": "redis",
+      "command": "redis-server",
+      "port": 6379
+    },
+    {
+      "name": "django",
+      "cwd": "C:/path/to/my-django-be",
+      "command_windows": "python manage.py runserver 8000",
+      "command_unix": "python3 manage.py runserver 8000",
+      "port": 8000,
+      "url": "http://localhost:8000",
+      "env": {
+        "DB_PASSWORD": "<DUMMY_DB_PASSWORD>"
+      },
+      "depends_on": [
+        "redis"
+      ]
+    }
+  ]
+}

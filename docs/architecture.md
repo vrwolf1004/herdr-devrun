@@ -1,6 +1,6 @@
 # 구조
 
-Python 3.8+ 표준 라이브러리만 쓴다. 매니페스트가 같은 액션을 OS별로 선언하고(Windows `python`, Linux/macOS `python3`), 액션 진입점은 `src/devrun.py`다. `panel` 액션은 pane을 나눈 뒤 셸에 대시보드 명령을 실행한다. OS마다 다른 부분은 `procs.py`(프로세스)와 `term.py`(터미널 입력)에 모았다.
+Python 3.8+ 표준 라이브러리만 쓴다. 매니페스트가 같은 액션을 OS별로 선언하고(Windows `python`, Linux/macOS `python3`), 액션 진입점은 `src/devrun.py`다. `panel` 액션은 프로젝트 탭 안에 대시보드 pane을 만들고 셸에 대시보드 명령을 실행한다. OS마다 다른 부분은 `procs.py`(프로세스)와 `term.py`(터미널 입력)에 모았다.
 
 ```text
 herdr-plugin.toml
@@ -25,13 +25,13 @@ src/core.py
   - herdr: `herdr()`(실행 + exit code 확인 + JSON의 `result` 반환), `herdr_text()`, `notify()`, `pane_id_of()`, `tab_exists()`, `live_pane_ids()`
   - config: `start_dir()`, `find_config_path()`, `read_config()`(필수 항목, 이름 중복, 시간 값, `depends_on` 대상·순환 검사), `service_command()`(OS별 명령 선택), `tab_label()`, `service_dir()`, `env_args()`
   - state: `read_state()`, `write_state()`, `remove_state()`, `live_state()`(사라진 탭·pane 정리), `find_pane()`, `panel_marker_path()`(열린 대시보드 pane id)
-  - service: `Status`, `start_service()`(포트 충돌 검사 포함), `stop_service()`, `restart_service()`, `interrupt_and_wait()`, `service_status()`(셸 pid 캐시 사용 가능), `service_log()`
+  - service: `Status`, `start_service()`(포트 충돌 검사 포함), `stop_service()`, `restart_service()`, `interrupt_and_wait()`(Y/N 질문에 Y로 답함), `stop_all_services()`, `close_service_pane()`, `service_status()`(셸 pid 캐시 사용 가능), `service_log()`, `_pane_busy()`·`_release_wrapper()`(시작 전 래퍼 정리)
   - project: `StartPlan`(depends_on 순서로 단계적 시작), `is_ready()`, `up()`, `down()`, `init()`과 init 감지 함수
   - `DevrunError`: 사용자에게 그대로 보여 줄 오류. 액션은 알림 + stderr + exit 1, 대시보드는 아래 줄 메시지로 보여 준다. `PortInUseError`는 그 하위 클래스다.
 - `src/procs.py`: `child_process_map()`(부모 pid → [(자식 pid, 이름)]), `has_running_children()`, `is_listening()`, 파싱 함수 `parse_proc_stat()`, `parse_ps_line()`.
 - `src/term.py`: `open_terminal()`이 OS에 맞는 터미널 객체를 돌려준다. `with` 블록 안에서 대체 화면과 입력 모드를 켜고, `read(timeout)`이 `Event` 목록을 돌려준다. `size()`, `write()`.
 - `src/i18n.py`: 언어 결정, 번역 파일 로드, `t(key, **values)` 문구 치환. 지원 언어는 `en`, `ko`, `ru`, `fr`, `es`, `de`, `ja`이며 문구는 `src/locales/<언어>.json`에 둔다.
-- `src/devrun.py`: 액션 진입점(argparse). 시작 폴더와 설정 파일을 찾아 `core` 함수를 부른다. `panel` 액션은 같은 프로젝트의 pane id 표식이 가리키는 pane이 있으면 해당 탭에 포커스를 둔다. 없으면 현재 pane 오른쪽에 새 pane을 나누고, 프로젝트 루트에서 실행할 `panel.py` 명령을 셸에 입력한 뒤 pane id를 표식 파일에 기록한다. 명령이 끝나면(예: Ctrl+C) `panel.py`가 표식을 지운다.
+- `src/devrun.py`: 액션 진입점(argparse). 시작 폴더와 설정 파일을 찾아 `core` 함수를 부른다. `up`·`restart`는 먼저 `open_control_box()`로 프로젝트 탭을 만든다. 같은 label의 `devrun` space가 있으면 그 안에 탭만 더하고, 없으면 space를 새로 만든다. 탭의 첫 pane(`control-box`)에 `panel.py` 명령을 입력하고 pane id를 표식 파일에 기록한다. `panel` 액션은 표식의 pane이 같은 프로젝트 탭에 있으면 포커스만 두고, 없으면 서비스 pane 옆(서비스 탭이 없으면 현재 pane 옆)에 대시보드 pane을 나눈다. 명령이 끝나면(예: Ctrl+C) `panel.py`가 표식을 지운다.
 - `src/panel.py`: 대시보드. `Panel` 클래스가 화면 상태, 그리기, 입력 해석, 명령 실행을 맡는다.
 
 ## 실행 흐름
@@ -45,10 +45,10 @@ src/core.py
 
 ### 서비스 하나 시작 (`start_service`)
 
-1. 상태를 읽고 사라진 탭·pane을 정리한다(`live_state`). 이미 떠 있으면 아무것도 하지 않는다.
+1. 상태를 읽고 사라진 탭·pane을 정리한다(`live_state`). 프로세스가 살아 있는 pane이 있으면 아무것도 하지 않는다. 프로세스가 없는 pane(끝났거나 중지한 것)은 같은 pane에서 명령을 다시 입력한다. 래퍼 `cmd.exe`만 남고 Y/N 질문이 보이면 Y로 답한 뒤 시작한다.
 2. `port`가 이미 열려 있으면 `PortInUseError`. 띄워도 충돌로 실패하는데 상태는 "실행 중"으로 보이기 때문이다.
 3. 탭이 없으면 `herdr tab create --cwd <서비스 폴더> --label <tab> [--env ...]`로 만들고 `root_pane`을 쓴다.
-4. 탭이 있으면 마지막 서비스 pane을 나눈다. 서비스 pane이 1개면 `right`, 2개 이상이면 `down`.
+4. 탭이 있으면 컨트롤 박스 오른쪽에 첫 서비스 pane을 나누고, 그다음 서비스는 그 오른쪽, 이후는 마지막 pane 아래로 쌓는다.
 5. 상태에 pane을 추가해 저장하고, `herdr pane rename`(서비스 이름) → `herdr pane run`(명령 + Enter)을 보낸다.
 
 전체 시작(`up`, 대시보드 `a`)은 `StartPlan`으로 모든 서비스에 이 과정을 반복한다. 처음부터 띄우면 아래 배치가 되고, 일부만 떠 있으면 빠진 것만 추가된다.
@@ -63,7 +63,7 @@ src/core.py
 └──────────────┴──────────────┘
 ```
 
-herdr-sidebar 같은 다른 플러그인이 탭을 만들 때 pane을 자동으로 추가할 수 있다. devrun은 자기가 만든 pane id만 추적하므로 동작에는 영향이 없다. 서비스 pane이 하나도 없이 다른 pane만 남은 탭은 닫고 새로 만든다.
+herdr-sidebar 같은 다른 플러그인이 탭을 만들 때 pane을 자동으로 추가할 수 있다. devrun은 자기가 만든 pane id만 추적하므로 동작에는 영향이 없다. 서비스 pane이 하나도 없이 다른 pane만 남은 탭은 닫고 새로 만든다. 컨트롤 박스가 있는 탭은 서비스 pane이 없어도 그대로 쓴다.
 
 ### 전체 시작 (`StartPlan`)
 
@@ -79,14 +79,14 @@ herdr-sidebar 같은 다른 플러그인이 탭을 만들 때 pane을 자동으�
 
 ### 서비스 하나 중지 (`stop_service`)
 
-1. `interrupt_and_wait()`: pane 셸 pid를 구하고 Ctrl+C를 보낸 뒤, 셸 아래 프로세스가 끝날 때까지 0.2초(`STOP_POLL_SECONDS`) 간격으로 확인한다. 최대 `stop_timeout`(기본 10초)까지만 기다린다.
-2. 남은 서비스가 있으면 그 pane만 `herdr pane close`, 마지막 서비스였으면 `herdr tab close` 후 상태 파일을 지운다.
+1. `interrupt_and_wait()`: pane 셸 pid를 구하고 Ctrl+C를 보낸 뒤, 셸 아래 프로세스가 끝날 때까지 0.2초(`STOP_POLL_SECONDS`) 간격으로 확인한다. 최대 `stop_timeout`(기본 10초)까지만 기다린다. 기다리는 동안 Y/N 질문이 보이면 `answer_prompt()`가 `Y`와 Enter를 보낸다.
+2. 프로세스가 끝났으면 pane을 닫지 않고 상태에 `stopped` 표시를 남긴다(상태 `STOPPED`). 끝나지 않았으면 그 pane만 `herdr pane close`한다. 탭은 닫지 않는다.
 
-재시작은 중지 후 시작이다. 같은 pane에서 다시 실행하지 않는 이유는, Windows `.bat`(gradlew 등)가 Ctrl+C 후 "일괄 작업을 끝내시겠습니까 (Y/N)?"를 물어 입력 상태가 불확실해지기 때문이다.
+재시작은 중지 후 시작이다. 시작은 같은 pane에서 명령을 다시 입력하고, 프로세스가 끝나지 않아 pane을 닫은 경우에만 새 pane을 만든다.
 
-### 전체 중지 (`down`)
+### 전체 중지 (`down`, CLI)
 
-모든 서비스 pane에 Ctrl+C를 먼저 보내고, 서비스마다 자기 `stop_timeout`까지 함께 기다린 뒤 탭을 닫는다. 남은 프로세스는 pane과 함께 종료된다. 설정 파일이 깨져 있어도 기본값으로 내릴 수 있다.
+모든 서비스 pane에 Ctrl+C를 먼저 보내고, 서비스마다 자기 `stop_timeout`까지 함께 기다린 뒤 탭을 닫는다. 남은 프로세스는 pane과 함께 종료된다. 설정 파일이 깨져 있어도 기본값으로 내릴 수 있다. 대시보드의 전체 중지(`x`)는 `stop_all_services()`로 같은 방식으로 멈추되 탭과 컨트롤 박스를 남긴다.
 
 ### init
 
@@ -98,15 +98,15 @@ herdr-sidebar 같은 다른 플러그인이 탭을 만들 때 pane을 자동으�
 
 | 상태 | 조건 |
 |---|---|
-| `STOPPED` | 상태 파일에 pane이 없음 (또는 pane이 사라짐) |
-| `EXITED` | pane은 있지만 셸(`shell_pid`) 아래에 돌고 있는 프로세스가 없음 (`has_running_children`) |
+| `STOPPED` | 상태 파일에 pane이 없음, 또는 `stopped` 표시가 있고 프로세스가 없음 |
+| `EXITED` | pane은 있지만 셸(`shell_pid`) 아래에 돌고 있는 프로세스가 없고, `stopped` 표시가 없음 (`has_running_children`) |
 | `STARTING` | 자식 프로세스가 있지만 `port`에 연결되지 않음 |
 | `RUNNING` | 자식 프로세스가 있고 `port`에 연결됨 (`port`가 없으면 자식 프로세스만으로 판단) |
 | `WORKING` | 대시보드가 시작·중지를 처리하는 동안만 쓰는 화면용 상태 |
 | `WAITING` | 대시보드 전체 시작에서 `depends_on`을 기다리는 동안만 쓰는 화면용 상태 |
 
 - Windows에서 `herdr pane process-info`의 `foreground_processes`는 셸 자신만 돌려준다. 그래서 모든 OS에서 `shell_pid`만 쓰고, 자식 프로세스는 직접 조회한다.
-- `has_running_children`: `conhost.exe`는 무시하고, `cmd.exe`는 자기 아래에 실제 프로세스가 있을 때만 "돈다"고 본다. Windows `.bat`가 Ctrl+C 후 `cmd.exe`만 남아 Y/N을 기다리는 상태를 종료로 보기 위해서다.
+- `has_running_children`: `conhost.exe`는 무시하고, `cmd.exe`는 자기 아래에 실제 프로세스가 있을 때만 "돈다"고 본다. Windows `.bat`가 Ctrl+C 후 `cmd.exe`만 남아 Y/N을 기다리는 상태를 종료로 보기 위해서다. 다만 중지·시작 판정(`_has_live_process`, `_pane_busy`)은 `cmd.exe`가 남아 있으면 기다리거나 답하도록 `_has_wrapper`를 함께 본다.
 - 자식 프로세스 조회는 갱신마다 한 번만 하고 부모 pid별로 묶는다. 대시보드는 pane id → 셸 pid를 캐시해 `process-info`를 다시 묻지 않는다(pane이 살아 있는 동안 셸 pid는 바뀌지 않는다).
 
 | OS | 방법 |
@@ -165,7 +165,7 @@ with terminal:   입력 모드 변경 → 대체 화면, 커서 숨김
 
 - 위치: `HERDR_PLUGIN_STATE_DIR` (herdr가 액션과 플러그인 pane에 주입). 수동 실행으로 없으면 Windows `%LOCALAPPDATA%\herdr-devrun`, Linux/macOS `$XDG_STATE_HOME/herdr-devrun` 또는 `~/.local/state/herdr-devrun`.
 - 파일명: 프로젝트 루트 경로의 SHA-1 앞 16자 + `.json`. Windows는 경로를 소문자로 바꿔 계산한다(대소문자 구분 없음). 프로젝트마다 하나다.
-- 내용: `project`, `label`, `tab_id`, `panes[{name, pane_id}]`. pane은 서비스 `name`으로 찾으므로 설정에서 이름이 중복되면 안 된다.
+- 내용: `project`, `label`, `workspace_id`, `tab_id`, `panes[{name, pane_id, stopped}]`, `control_box`(컨트롤 박스 pane id). pane은 서비스 `name`으로 찾으므로 설정에서 이름이 중복되면 안 된다. `stopped`는 중지 후 pane을 남겨 둔 표시다.
 - 액션과 대시보드가 같은 파일을 읽고 쓴다. 쓰기 전에 항상 최신 상태를 다시 읽어(`live_state`) 덮어쓰기 충돌을 줄인다.
 - herdr 서버를 재시작하면 탭 id가 무효가 될 수 있다. `tab_exists`로 확인하고, 없으면 상태를 지운다.
 
