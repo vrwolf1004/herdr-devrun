@@ -214,6 +214,15 @@
 - **범위**: `docs/todo.md`, 필요하면 태그
 - **확인**: `git tag`에 `v0.3.0`이 있는지, 문서의 버전과 `herdr-plugin.toml`의 `version`이 같은지 본다.
 
+### 19. 서비스 추가를 분류 → 기술 → 경로·포트 단계로 — 완료 (실제 터미널 확인은 아직)
+
+- **현상**: 대시보드 `+ 추가`가 모든 칸을 빈 값으로 묻고, 명령과 포트를 사용자가 직접 적어야 했다. 언어·프레임워크별 기본 포트와 명령을 알려 주는 곳이 없었다.
+- **개선안**: 분류(프론트엔드·백엔드·미들웨어·데이터베이스·기타)를 고르고, 기술을 고르면 명령과 포트를 채워 둔다. 값은 `src/presets.py` 에 두고, 출처가 확인되지 않은 값은 "추정"으로 표시한다. React(Vite)는 포트를 고정하지 않는다.
+- **완료한 것**: 분류·기술 선택 칸(↑↓ 선택, Enter 다음), 프리셋 표와 출처, Windows·Unix 명령이 다르면 `command_windows` / `command_unix` 로 저장, 7개 언어 키 맞춤, [usage.md](usage.md)·[usage.ko.md](usage.ko.md) 반영, 테스트 `tests/test_service_edit.py`·`tests/test_presets.py`.
+- **남은 것**: 실제 터미널에서 대시보드를 띄워 흐름을 눌러 보는 확인은 아직 하지 않았다 (화면 한 프레임을 버퍼에 그려 본 것까지만 확인).
+- **범위**: `src/presets.py`, `src/panel.py`, `src/core.py`, `src/locales/*.json`, `docs/usage.md`, `docs/usage.ko.md`
+- **확인**: `python -m unittest discover -s tests` 통과. 잘못된 입력(포트 99999, 빈 명령)에서 설정 파일이 바뀌지 않는지 테스트로 확인.
+
 ---
 
 ## 점검했지만 문제없던 것

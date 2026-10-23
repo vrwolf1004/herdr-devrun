@@ -11,6 +11,7 @@ import enum
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 import time
@@ -119,11 +120,58 @@ def find_config_path(start):
     raise DevrunError(t("error.config_not_found", config=CONFIG_NAME, start=start))
 
 
-def read_config(config_path):
+def load_raw(config_path):
     try:
-        config = json.loads(config_path.read_text(encoding="utf-8-sig"))
+        return json.loads(config_path.read_text(encoding="utf-8-sig"))
     except json.JSONDecodeError as error:
         raise DevrunError(t("error.config_json", path=config_path, error=error)) from error
+
+
+def read_config(config_path):
+    return validate_config(load_raw(config_path), config_path)
+
+
+def save_service(config_path, service, original_name=None):
+    """서비스 하나를 넣거나(새 이름) 같은 이름을 바꾼다. 검증이 실패하면 파일을 건드리지 않는다."""
+    config = load_raw(config_path)
+    services = config.get("services") or []
+    index = next((i for i, each in enumerate(services) if each.get("name") == original_name), None)
+    if index is None:
+        services.append(service)
+    else:
+        services[index] = service
+    config["services"] = services
+    validate_config(config, config_path)
+    _write_config(config_path, config)
+
+
+def remove_service(config_path, name):
+    """서비스를 지우고, 다른 서비스의 depends_on 에서도 이름을 뺀다."""
+    config = load_raw(config_path)
+    services = [each for each in config.get("services") or [] if each.get("name") != name]
+    for each in services:
+        if name in each.get("depends_on", []):
+            each["depends_on"] = [dependency for dependency in each["depends_on"] if dependency != name]
+            if not each["depends_on"]:
+                del each["depends_on"]
+    config["services"] = services
+    validate_config(config, config_path)
+    _write_config(config_path, config)
+
+
+def _write_config(config_path, config):
+    temp = config_path.with_name(config_path.name + ".tmp")
+    temp.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    os.replace(temp, config_path)
+
+
+def command_key(service):
+    """서비스의 명령이 적힌 키. 현재 OS 전용 키(command_windows / command_unix)가 있으면 그것, 없으면 command."""
+    override = "command_windows" if IS_WINDOWS else "command_unix"
+    return override if service.get(override) else "command"
+
+
+def validate_config(config, config_path):
     if not isinstance(config, dict):
         raise DevrunError(t("error.config_not_object", path=config_path))
     services = config.get("services") or []
@@ -319,16 +367,29 @@ def start_service(project_dir, config, service, focus=False):
     배치: 첫 pane 왼쪽, 두 번째 오른쪽, 이후는 마지막 pane 아래로 쌓는다.
     """
     state = live_state(project_dir, live_pane_ids())
-    if find_pane(state, service["name"]):
-        return False
+    pane = find_pane(state, service["name"])
+    if pane and _pane_busy(pane):
+        if not _release_wrapper(pane):  # 서비스 프로세스가 살아 있거나 질문이 없으면 건드리지 않는다
+            return False
+        if not _wait_until_idle(pane, RELEASE_WAIT_SECONDS):  # 답한 뒤에도 래퍼가 남으면 pane 을 닫고 새로 만든다
+            herdr("pane", "close", pane["pane_id"], check=False)
+            state["panes"] = [each for each in state["panes"] if each is not pane]
+            write_state(project_dir, state)
+            pane = None
     # 다른 프로세스가 이미 port 를 쓰고 있으면, 띄워도 충돌로 실패하는데 상태는 "실행 중"으로 보이므로 막는다.
     port = service.get("port")
     if port and procs.is_listening(int(port)):
         raise PortInUseError(t("error.port_in_use", name=service["name"], port=port))
+    if pane:  # 끝났거나 중지한 pane 은 셸 프롬프트에서 명령만 다시 입력한다
+        run_in_pane(pane["pane_id"], service)
+        pane.pop("stopped", None)
+        write_state(project_dir, state)
+        return True
 
     folder = service_dir(project_dir, service)
     # 서비스 pane 을 모두 손으로 닫아 다른 플러그인 pane 만 남은 탭은 버리고 새로 만든다.
-    if state and not state["panes"]:
+    # 컨트롤 박스가 있는 탭은 서비스 pane 이 없어도 그대로 쓴다.
+    if state and not state["panes"] and not state.get("control_box"):
         herdr("tab", "close", state["tab_id"])
         remove_state(project_dir)
         state = None
@@ -341,9 +402,10 @@ def start_service(project_dir, config, service, focus=False):
         state = {"project": str(project_dir), "label": label, "tab_id": created["tab"]["tab_id"], "panes": []}
         pane_id = pane_id_of(created)
     else:
-        last = state["panes"][-1]
-        direction = "right" if len(state["panes"]) == 1 else "down"
-        pane_id = pane_id_of(herdr("pane", "split", last["pane_id"], "--direction", direction,
+        # 컨트롤 박스 바로 오른쪽, 그다음 서비스 오른쪽, 이후는 마지막 pane 아래로 쌓는다.
+        last = state["panes"][-1]["pane_id"] if state["panes"] else state["control_box"]
+        direction = "right" if len(state["panes"]) <= 1 else "down"
+        pane_id = pane_id_of(herdr("pane", "split", last, "--direction", direction,
                                    "--cwd", folder, "--no-focus", *env_args(service)))
 
     state["panes"].append({"name": service["name"], "pane_id": pane_id})
@@ -376,27 +438,54 @@ def shell_pid(pane_id):
 def interrupt_and_wait(panes):
     """[(pane_id, 최대 대기 초)] 에 Ctrl+C 를 보내고, 셸 아래 프로세스가 끝날 때까지 기다린다.
 
+    기다리는 동안 pane 에 "(Y/N)" 질문이 보이면 Y 와 Enter 로 답한다 (.bat 의 "일괄 작업을 끝내시겠습니까?" 등).
     pane 마다 최대 시간이 지나면 더 기다리지 않는다. 끝나지 않은 프로세스는 pane/탭을 닫을 때 함께 종료된다.
     """
     now = time.monotonic()
-    pending = {}
+    pending = {}   # 셸 pid → (끝나야 할 시각, pane id)
+    answered = {}  # pane id → 지금까지 답한 질문 수
     for pane_id, timeout in panes:
         pid = shell_pid(pane_id)
         herdr("pane", "send-keys", pane_id, "ctrl+c", check=False)
         if pid:
-            pending[pid] = now + timeout
+            pending[pid] = (now + timeout, pane_id)
     while pending:
         time.sleep(STOP_POLL_SECONDS)
         child_map = procs.child_process_map()
         now = time.monotonic()
-        pending = {pid: deadline for pid, deadline in pending.items()
-                   if deadline > now and procs.has_running_children(child_map, pid)}
+        still = {}
+        for pid, (deadline, pane_id) in pending.items():
+            if deadline <= now:  # 기다림이 끝나는 순간 래퍼가 남아 있으면 질문이 막 나온 것일 수 있어 한 번 더 본다
+                if _has_wrapper(child_map, pid):
+                    answer_prompt(pane_id, answered)
+                continue
+            answer_prompt(pane_id, answered)
+            if procs.has_running_children(child_map, pid) or _has_wrapper(child_map, pid):
+                still[pid] = (deadline, pane_id)
+        pending = still
+
+
+PROMPT_PATTERN = re.compile(r"\bY/N\b", re.IGNORECASE)  # "(Y/N)" "[Y/N]" 등 언어와 상관없이 Y/N 질문
+PROMPT_LINES = 40
+RELEASE_WAIT_SECONDS = 5  # 래퍼에 답한 뒤 래퍼가 사라지기를 기다리는 최대 시간
+
+
+def answer_prompt(pane_id, answered):
+    """pane 에 새 Y/N 질문이 나왔으면 Y 와 Enter 로 답한다. 이미 답한 질문은 다시 답하지 않는다. 답했으면 True."""
+    text = herdr_text("pane", "read", pane_id, "--lines", PROMPT_LINES, "--source", "recent-unwrapped")
+    count = len(PROMPT_PATTERN.findall(text))
+    sent = count > answered.get(pane_id, 0)
+    if sent:
+        herdr("pane", "send-text", pane_id, "Y", check=False)
+        herdr("pane", "send-keys", pane_id, "enter", check=False)
+    answered[pane_id] = count  # 화면에서 밀려난 질문은 세지 않는다 (줄어들면 맞춰 준다)
+    return sent
 
 
 def stop_service(project_dir, name, timeout=STOP_TIMEOUT_SECONDS):
-    """Ctrl+C 로 정상 종료 기회를 준 뒤 pane 을 닫는다. 마지막 서비스면 탭도 닫는다.
+    """Ctrl+C 로 프로세스만 끈다. pane 은 셸 프롬프트 상태로 남기고 '중지'로 표시한다.
 
-    떠 있지 않으면 False.
+    끝나지 않으면 (예: .bat 의 종료 확인에 걸림) pane 을 닫아 확실히 끈다. 떠 있지 않으면 False.
     """
     state = live_state(project_dir, live_pane_ids())
     pane = find_pane(state, name)
@@ -404,21 +493,122 @@ def stop_service(project_dir, name, timeout=STOP_TIMEOUT_SECONDS):
         return False
 
     interrupt_and_wait([(pane["pane_id"], timeout)])
-    state["panes"] = [each for each in state["panes"] if each["name"] != name]
-    if state["panes"]:
-        herdr("pane", "close", pane["pane_id"])
-        write_state(project_dir, state)
+    if _has_live_process(pane):
+        _drop_pane(project_dir, state, pane)
     else:
-        herdr("tab", "close", state["tab_id"])
-        remove_state(project_dir)
+        pane["stopped"] = True
+        write_state(project_dir, state)
     return True
 
 
+def stop_all_services(project_dir, config):
+    """대시보드의 전체 중지. 실행 중인 서비스를 단일 중지와 같이 끈다: pane 은 남기고 '중지'로 표시한다.
+    제 시간에 끝나지 않은 pane 은 닫는다. 탭과 컨트롤 박스는 남긴다 (탭 전체를 닫는 것은 down 이다).
+
+    중지한 서비스 수를 돌려준다. 실행 중인 것이 없으면 0 이고 아무것도 하지 않는다.
+    """
+    state = live_state(project_dir, live_pane_ids())
+    if not state:
+        return 0
+    candidates = [pane for pane in state["panes"] if not pane.get("stopped")]
+    # 중지 전에 실제로 프로세스가 돌고 있던 pane 만 Ctrl+C 를 보내고 센다. 이미 죽어 있던 pane 은 표시만 바꾼다.
+    running = [pane for pane in candidates if _has_live_process(pane)]
+    services = {service["name"]: service for service in (config or {}).get("services", [])}
+    if running:
+        interrupt_and_wait([(pane["pane_id"], stop_timeout(services.get(pane["name"]))) for pane in running])
+    closed = []
+    for pane in candidates:
+        if pane in running and _has_live_process(pane):
+            herdr("pane", "close", pane["pane_id"], check=False)
+            closed.append(pane["name"])
+        else:
+            pane["stopped"] = True
+    state["panes"] = [pane for pane in state["panes"] if pane["name"] not in closed]
+    if state["panes"] or state.get("control_box"):
+        write_state(project_dir, state)  # 탭과 컨트롤 박스는 남긴다
+    else:
+        herdr("tab", "close", state["tab_id"], check=False)
+        remove_state(project_dir)
+    return len(running)
+
+
+def close_service_pane(project_dir, name, timeout=STOP_TIMEOUT_SECONDS):
+    """서비스 pane 을 닫는다. 프로세스가 살아 있으면 먼저 끈다. 컨트롤 박스가 있는 탭은 남긴다.
+
+    떠 있지 않던 pane 도 닫는다. pane 이 없으면 False.
+    """
+    state = live_state(project_dir, live_pane_ids())
+    pane = find_pane(state, name)
+    if not pane:
+        return False
+    interrupt_and_wait([(pane["pane_id"], timeout)])
+    _drop_pane(project_dir, state, pane)
+    return True
+
+
+def _has_live_process(pane):
+    """셸 아래에 아직 돌고 있는 프로세스가 있는지. 셸 pid 를 모르면 있다고 본다 (안전하게 닫는 쪽)."""
+    pid = shell_pid(pane["pane_id"])
+    if not pid:
+        return True
+    child_map = procs.child_process_map()
+    return procs.has_running_children(child_map, pid) or _has_wrapper(child_map, pid)
+
+
+def _release_wrapper(pane):
+    """서비스 프로세스 없이 cmd.exe 래퍼만 남은 pane 에서, 화면에 Y/N 질문이 있으면 답한다. 답했으면 True.
+
+    서비스 프로세스가 살아 있거나 질문이 없으면 아무것도 보내지 않고 False.
+    """
+    pid = shell_pid(pane["pane_id"])
+    if not pid:
+        return False
+    child_map = procs.child_process_map()
+    if procs.has_running_children(child_map, pid) or not _has_wrapper(child_map, pid):
+        return False
+    return answer_prompt(pane["pane_id"], {})
+
+
+def _wait_until_idle(pane, seconds):
+    """pane 에 살아 있는 프로세스가 없어질 때까지 기다린다. 제 시간에 안 없어지면 False."""
+    deadline = time.monotonic() + seconds
+    while _pane_busy(pane):
+        if time.monotonic() >= deadline:
+            return False
+        time.sleep(STOP_POLL_SECONDS)
+    return True
+
+
+def _pane_busy(pane):
+    """pane 셸 아래에 서비스 프로세스가 살아 있는지. 셸 pid 를 모르면 '안 돌고 있음'으로 보고 다시 쓴다."""
+    pid = shell_pid(pane["pane_id"])
+    if not pid:
+        return False
+    child_map = procs.child_process_map()
+    return procs.has_running_children(child_map, pid) or _has_wrapper(child_map, pid)
+
+
+def _has_wrapper(child_map, pid):
+    """셸 아래 cmd.exe (.bat 래퍼)가 남아 있는지. Ctrl+C 뒤 Y/N 질문에서 기다리는 중일 수 있어, 끝난 것으로 보지 않는다."""
+    return any(name.lower() == "cmd.exe" for _, name in child_map.get(pid, []))
+
+
+def _drop_pane(project_dir, state, pane):
+    """pane 을 닫고 상태에서 뺀다. 마지막 pane 이고 컨트롤 박스가 없는 탭이면 탭도 닫는다."""
+    herdr("pane", "close", pane["pane_id"], check=False)
+    state["panes"] = [each for each in state["panes"] if each["name"] != pane["name"]]
+    if state["panes"] or state.get("control_box"):
+        write_state(project_dir, state)
+    else:
+        herdr("tab", "close", state["tab_id"], check=False)
+        remove_state(project_dir)
+
+
 def restart_service(project_dir, config, service):
-    """같은 pane 에서 다시 실행하지 않고 pane 을 새로 연다.
+    """중지한 뒤 다시 시작한다. 프로세스가 깨끗이 끝났으면 pane 을 그대로 쓰고, 끝나지 않아 pane 을 닫았으면 새로 연다.
 
     Windows 의 .bat(gradlew 등)는 Ctrl+C 후 "일괄 작업을 끝내시겠습니까 (Y/N)?" 를 물어
-    입력 상태가 불확실해지기 때문이다.
+    입력 상태가 불확실해질 수 있어서, 끝나지 않은 경우는 pane 을 닫는다.
     """
     stop_service(project_dir, service["name"], stop_timeout(service))
     start_service(project_dir, config, service)
@@ -440,7 +630,7 @@ def service_status(service, state, child_map, pid_cache=None):
         if pid_cache is not None and pid:
             pid_cache[pane_id] = pid
     if not pid or not procs.has_running_children(child_map, pid):
-        return Status.EXITED
+        return Status.STOPPED if pane.get("stopped") else Status.EXITED
     port = service.get("port")
     if port and not procs.is_listening(int(port)):
         return Status.STARTING
@@ -477,6 +667,7 @@ class StartPlan:
     한 번에 끝까지 기다리지 않는 것은 대시보드가 기다리는 동안에도 입력과 화면 갱신을 계속하기 위해서다.
     결과
       started : 새로 띄운 수
+      skipped : 이미 살아 있어서 건드리지 않은 서비스 이름 (실패가 아님)
       failed  : [(이름, 이유 키)] — reason.port_in_use / reason.dependency_failed / reason.timeout
     """
 
@@ -489,6 +680,7 @@ class StartPlan:
         self.begin = time.monotonic()
         self.started = 0
         self.started_at = {}   # 이 계획에서 띄운 서비스 이름 → 띄운 시각
+        self.skipped = []      # 이미 살아 있어서 건너뛴 서비스 이름
         self.failed = []
 
     @property
@@ -517,6 +709,8 @@ class StartPlan:
                     if start_service(self.project_dir, self.config, service, focus=self.focus):
                         self.started += 1
                         self.started_at[service["name"]] = time.monotonic()
+                    else:  # 이미 살아 있어서 건드리지 않았다 (실패가 아니다)
+                        self.skipped.append(service["name"])
                 except PortInUseError:
                     self.failed.append((service["name"], "reason.port_in_use"))
             elif now - self.begin > start_timeout(service):
@@ -554,6 +748,12 @@ def up(project_dir, config):
         notify(t("notice.title"), t("notice.already_running", label=state["label"]))
 
 
+def _workspace_is_empty(workspace_id):
+    """남은 탭이 없을 때만 space 를 닫는다. 목록을 못 얻으면(이미 닫혔거나 실패) 닫지 않아 다른 탭을 지키지 않는다."""
+    listed = herdr("tab", "list", "--workspace", workspace_id, check=False)
+    return listed is not None and not listed.get("tabs")
+
+
 def down(project_dir, quiet=False, config=None):
     state = live_state(project_dir, live_pane_ids())
     if not state:
@@ -564,6 +764,8 @@ def down(project_dir, quiet=False, config=None):
     services = {service["name"]: service for service in (config or {}).get("services", [])}
     interrupt_and_wait([(pane["pane_id"], stop_timeout(services.get(pane["name"]))) for pane in state["panes"]])
     herdr("tab", "close", state["tab_id"])
+    if state.get("workspace_id") and _workspace_is_empty(state["workspace_id"]):
+        herdr("workspace", "close", state["workspace_id"], check=False)
     remove_state(project_dir)
     if not quiet:
         notify(t("notice.title"), t("notice.stopped", label=state["label"]))

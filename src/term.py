@@ -70,7 +70,7 @@ class _WindowsTerminal(_Screen):
     _KEY_EVENT = 0x0001
     _MOUSE_EVENT = 0x0002
     _WINDOW_BUFFER_SIZE_EVENT = 0x0004
-    _VIRTUAL_KEYS = {0x26: "up", 0x28: "down", 0x24: "home", 0x23: "end", 0x0D: "enter", 0x1B: "esc"}
+    _VIRTUAL_KEYS = {0x26: "up", 0x28: "down", 0x24: "home", 0x23: "end", 0x0D: "enter", 0x1B: "esc", 0x08: "backspace"}
 
     def __init__(self):
         import ctypes
@@ -233,6 +233,8 @@ class _UnixTerminal(_Screen):
                 return 1, Event("key", key="enter")
             if first == "\x03":
                 return 1, Event("key", key="ctrl+c")
+            if first in "\x08\x7f":
+                return 1, Event("key", key="backspace")
             if first.isprintable():
                 return 1, Event("key", key=first)
             return 1, None
