@@ -264,6 +264,48 @@ The dashboard runs as a command in the pane's shell. Pressing Ctrl+C stops it an
 - Restart closes and recreates the pane. Windows batch files such as `gradlew.bat` may prompt "Terminate batch job?" after Ctrl+C, so the command is not run again in the same pane.
 - Closing the dashboard does not stop services.
 
+### Add, edit, and delete services
+
+The dashboard has three buttons: `+ Add`, `✎ Edit`, and `✕ Delete`. They have no keyboard shortcut. Each one opens a step-by-step form on the message line; the log preview is replaced by the choice list while you choose.
+
+**Add** asks these steps in order:
+
+1. **Category**: Frontend, Backend, Middleware, Database, or Other. Move with `↑` `↓`, then press `Enter`.
+2. **Technology**: the presets of that category (table below). Other has only "Enter manually".
+3. **Name, Folder, Command, Port, URL, Depends on**: Choosing a technology fills in its command and port. `Enter` keeps the value shown in brackets, and `-` clears the field. Change any value before saving.
+
+The whole configuration is validated after the last step. If validation fails (for example, port `99999` or an empty command), the file is not changed. The message line shows the error and the form starts again at the first step with your entries kept as the defaults.
+
+**Edit** asks the same fields, starting from the current values. Settings the form does not show (for example `env` and timeouts) are kept as they are.
+
+**Delete** asks you to type `y` and press `Enter`. The service is also removed from the `depends_on` lists of other services. A running service cannot be deleted or renamed; stop it first.
+
+Presets are defined in `src/presets.py`. A preset's values are written as you see them, so check them before saving. When the Windows and Unix commands differ (for example Gradle's `gradlew.bat` and `./gradlew`), the service is saved with `command_windows` and `command_unix`. The command for the OS you are on comes from your edit; the other OS keeps the preset command.
+
+| Category | Technology | Command (Windows / Unix) | Port | Source |
+|---|---|---|---|---|
+| Frontend | React (Vite) | `npm run dev` | none (not fixed) | docs |
+| Frontend | Next.js | `npm run dev` | 3000 | docs |
+| Frontend | Vue | `npm run dev` | 5173 | estimate (create-vue on Vite) |
+| Frontend | Angular | `npx ng serve` | 4200 | docs |
+| Frontend | Vite (other build tools) | `npm run dev` | 5173 | docs |
+| Backend | Spring Boot (Gradle) | `gradlew.bat bootRun` / `./gradlew bootRun` | 8080 | docs |
+| Backend | Spring Boot (Maven) | `mvnw.cmd spring-boot:run` / `./mvnw spring-boot:run` | 8080 | docs |
+| Backend | ASP.NET Core | `dotnet run` | 5000 | estimate (Kestrel fallback; `launchSettings.json` overrides it) |
+| Backend | PHP (built-in server) | `php -S localhost:8000` | 8000 | estimate (manual example, not a default) |
+| Backend | PHP (Laravel) | `php artisan serve` | 8000 | estimate (secondary sources only) |
+| Backend | Node.js (Express) | `npm start` | 3000 | estimate (common convention, not a framework default) |
+| Backend | Django | `python manage.py runserver` / `python3 manage.py runserver` | 8000 | docs |
+| Backend | FastAPI | `uvicorn main:app --reload` | 8000 | estimate (uvicorn default is 8000; `main:app` is an assumption) |
+| Middleware | Redis | `redis-server` | 6379 | estimate (not checked against docs) |
+| Database | PostgreSQL | `postgres -D data` | 5432 | estimate (`data` is a placeholder for your data directory) |
+| Database | MySQL | `mysqld --console` / `mysqld` | 3306 | estimate (not checked against docs) |
+| Other | Enter manually | empty | empty | — |
+
+- **docs**: the default was confirmed against the tool's documentation or default source.
+- **estimate**: the value is commonly used but was not confirmed. Check it for your project before relying on it.
+- Folder has no preset: it stays empty (project root) unless you type one.
+
 ## 7. Examples
 
 ### Spring Boot (Gradle multi-module) + React (pnpm monorepo)
