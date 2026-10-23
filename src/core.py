@@ -682,6 +682,7 @@ class StartPlan:
         self.started_at = {}   # 이 계획에서 띄운 서비스 이름 → 띄운 시각
         self.skipped = []      # 이미 살아 있어서 건너뛴 서비스 이름
         self.failed = []
+        self.waiting_on = {}   # 시간 초과로 실패한 서비스 이름 → 그때 준비되지 않았던 의존 서비스 이름들
 
     @property
     def done(self):
@@ -714,6 +715,9 @@ class StartPlan:
                 except PortInUseError:
                     self.failed.append((service["name"], "reason.port_in_use"))
             elif now - self.begin > start_timeout(service):
+                # 시간 초과 시점에 아직 준비되지 않은 의존 서비스 이름을 남겨, 메시지에서 무엇을 기다렸는지 보이게 한다.
+                self.waiting_on[service["name"]] = [dependency["name"] for dependency in dependencies
+                                                    if not is_ready(dependency, state, child_map, pid_cache)]
                 self._fail(service, "reason.timeout")
 
     def _exited(self, dependency, state, child_map, pid_cache, now):
@@ -729,7 +733,13 @@ class StartPlan:
         self.failed.append((service["name"], reason))
 
     def failure_text(self):
-        return ", ".join(f"{name} ({t(reason)})" for name, reason in self.failed)
+        return ", ".join(f"{name} ({self._reason_text(name, reason)})" for name, reason in self.failed)
+
+    def _reason_text(self, name, reason):
+        waiting = self.waiting_on.get(name)
+        if reason == "reason.timeout" and waiting:
+            return t("reason.timeout_waiting", names=", ".join(waiting))
+        return t(reason)
 
 
 def up(project_dir, config):

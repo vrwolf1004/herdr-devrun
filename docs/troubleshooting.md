@@ -40,7 +40,7 @@ herdr plugin log list --plugin herdr-devrun
 | 대시보드 아래 줄에 `Unexpected error: ... (details: ...panel.log)` | 예상하지 못한 예외. 대시보드는 계속 돈다 | 메시지의 `panel.log` 경로에서 traceback을 확인한다. 같은 오류가 반복되면 그 내용으로 이슈를 남긴다 |
 | `port N is already in use by another process` / 전체 시작에서 `(port in use)` | 다른 프로세스(이전에 띄운 서버, IDE 실행 등)가 그 포트를 쓰는 중 | 위 "포트가 계속 사용 중" 방법으로 프로세스를 찾아 끄거나, 그 서버를 그대로 쓸 거라면 무시한다(의존 대상으로는 준비된 것으로 본다) |
 | 전체 시작에서 `(dependency failed)` | `depends_on` 대상이 끝나 버림(✕ 종료됨) | 의존 대상 서비스의 로그에서 실패 원인을 고친 뒤 다시 전체 시작 |
-| 전체 시작에서 `(timed out waiting for dependencies)` | `start_timeout` 안에 의존 대상의 `port`가 열리지 않음 | 의존 대상의 `port`가 맞는지 확인하고, 느리게 뜨는 서비스면 `start_timeout`을 늘린다 |
+| 전체 시작에서 `(timed out waiting for <의존 서비스 이름>)` | `start_timeout` 안에 의존 대상의 `port`가 열리지 않음 | 메시지에 적힌 의존 대상의 `port`가 맞는지 확인하고, 느리게 뜨는 서비스면 `start_timeout`을 늘린다 |
 | 서비스 중지가 오래 걸림 | Ctrl+C 후 프로세스가 끝나지 않아 `stop_timeout`(기본 10초)까지 기다림 | 정상 종료가 느린 서비스면 그대로 둔다. Ctrl+C를 무시하는 서비스면 `stop_timeout`을 줄인다 |
 | `depends_on has a cycle` / `unknown service` | 순환 의존 또는 없는 이름 | 메시지에 나온 경로(`a → b → a`)나 이름을 고친다 |
 | 대시보드를 닫은 뒤 터미널 입력이 이상함 (Linux/macOS) | 비정상 종료로 raw 모드가 복구되지 않음 | 그 pane에서 `reset` 또는 `stty sane`을 입력한다 |

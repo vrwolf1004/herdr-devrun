@@ -115,5 +115,6 @@
   "panel.pane_closed": "Окно '{name}' закрыто",
   "panel.stopped_count": "Остановлено сервисов: {count}",
   "panel.started_all_skipped": "Запуск всех завершён. Уже запущены: {names}",
-  "panel.already_running": "Уже запущены: {names}"
+  "panel.already_running": "Уже запущены: {names}",
+  "reason.timeout_waiting": "превышено время ожидания: {names}"
 }

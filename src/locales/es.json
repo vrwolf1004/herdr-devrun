@@ -115,5 +115,6 @@
   "panel.pane_closed": "Ventana '{name}' cerrada",
   "panel.stopped_count": "{count} servicios detenidos",
   "panel.started_all_skipped": "Inicio completo. Ya en ejecución: {names}",
-  "panel.already_running": "Ya en ejecución: {names}"
+  "panel.already_running": "Ya en ejecución: {names}",
+  "reason.timeout_waiting": "tiempo agotado esperando a {names}"
 }

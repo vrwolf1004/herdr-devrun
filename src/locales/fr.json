@@ -115,5 +115,6 @@
   "panel.pane_closed": "Fenêtre '{name}' fermée",
   "panel.stopped_count": "{count} service(s) arrêté(s)",
   "panel.started_all_skipped": "Démarrage terminé. Déjà en cours : {names}",
-  "panel.already_running": "Déjà en cours : {names}"
+  "panel.already_running": "Déjà en cours : {names}",
+  "reason.timeout_waiting": "délai dépassé en attendant {names}"
 }

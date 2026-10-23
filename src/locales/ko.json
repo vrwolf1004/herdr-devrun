@@ -115,5 +115,6 @@
   "panel.pane_closed": "{name} 창을 닫았습니다",
   "panel.stopped_count": "{count}개 서비스를 중지했습니다",
   "panel.started_all_skipped": "전체 시작 완료. 이미 실행 중: {names}",
-  "panel.already_running": "이미 실행 중: {names}"
+  "panel.already_running": "이미 실행 중: {names}",
+  "reason.timeout_waiting": "{names} 준비를 기다리다 시간 초과"
 }

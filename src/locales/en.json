@@ -115,5 +115,6 @@
   "panel.pane_closed": "Closed {name}",
   "panel.stopped_count": "Stopped {count} services",
   "panel.started_all_skipped": "Start all done. Already running: {names}",
-  "panel.already_running": "Already running: {names}"
+  "panel.already_running": "Already running: {names}",
+  "reason.timeout_waiting": "timed out waiting for {names}"
 }

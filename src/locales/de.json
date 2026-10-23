@@ -115,5 +115,6 @@
   "panel.pane_closed": "Fenster '{name}' geschlossen",
   "panel.stopped_count": "{count} Dienste gestoppt",
   "panel.started_all_skipped": "Alles gestartet. Bereits aktiv: {names}",
-  "panel.already_running": "Bereits aktiv: {names}"
+  "panel.already_running": "Bereits aktiv: {names}",
+  "reason.timeout_waiting": "Zeitüberschreitung beim Warten auf {names}"
 }

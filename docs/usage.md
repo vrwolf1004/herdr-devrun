@@ -187,6 +187,7 @@ Writing tips:
 
 The services of a project run in one tab named after the project (or `tab` in the configuration). The tab is in a shared space (herdr workspace) named `devrun`; each project adds its own tab to that space. The first pane of the tab is the dashboard (`control-box`), and service panes are placed to its right.
 - `up` starts only services that are not already running. If some are running, the remaining ones are added to the same tab.
+- Starting from the dashboard (the Start button or `a`) follows the same rule: if the control box is missing, it is created in the `devrun` space first. If the control box cannot be created, nothing is started and an error is shown. Restart does not follow this rule yet.
 - Use the dashboard (section 6) to manage an individual service.
 - You can close a tab or pane manually. The next run detects removed panes and cleans up the state.
 
@@ -194,7 +195,7 @@ The services of a project run in one tab named after the project (or `tab` in th
 
 - A dependent service starts when its dependencies are **ready**. If a dependency has a `port`, readiness means that port is open (a server started elsewhere also qualifies); without a port, readiness means the service is running.
 - If a dependency exits (✕), a waiting service is not started and is reported as "dependency failed". A service just started by the current plan is given a 5-second grace period before it can be considered failed.
-- If a dependency is not ready within `start_timeout` (default: 120 seconds), the dependent service is not started and is reported as timed out.
+- If a dependency is not ready within `start_timeout` (default: 120 seconds), the dependent service is not started and is reported as timed out, with the name of the dependency it was waiting for (for example, `frontend (timed out waiting for backend)`). For a slow backend such as Spring Boot, a value of 300 or more is suggested. `docs/examples/ex_react_spring.json` uses 300; this is an example value, not a measured startup time.
 - Services that could not start are reported in a notification (and in the dashboard's message line), for example: `web (dependency failed), late (timed out waiting for dependencies)`.
 - A service whose process is still running is skipped by start-all and listed as "Already running" in the completion message, separately from the services that failed.
 - Starting a **single** service from the dashboard does not wait for its dependencies; the user explicitly selected it.
@@ -268,7 +269,7 @@ Each service row ends with `▶ Start` or `■ Stop`, `✎ Edit`, `✕ Delete`, 
 - Status and log previews refresh every second. The log preview shows the selected service's recent output; wrapped pane lines are displayed as their original single lines.
 - Start-all accepts input while it waits. Selecting Stop all during startup cancels remaining starts.
 - If the service list exceeds the screen, it scrolls with the selected row and shows `▲ n more` / `▼ n more` indicators.
-- At widths below 40 columns, the port column is hidden; below 30 columns, status names are replaced by icons.
+- The port column is hidden when the service name would not fit beside the `Service` header with a space to spare. In English this happens at 43 columns or less, so the port column appears from 44 columns; other languages switch at a different width because their header text is longer or shorter. Below 30 columns, status names are replaced by icons.
 - Row buttons show words at 72 columns or wider, and icons below that. If the window is too narrow to fit them, they are hidden. Edit and Delete have no keyboard shortcut, so widen the window to use them.
 - Unexpected errors do not close the dashboard. A summary appears on the message line, with details in `panel.log` in the state directory.
 - Saving the configuration reloads it automatically. If it is invalid, an error appears and the previous configuration remains active.

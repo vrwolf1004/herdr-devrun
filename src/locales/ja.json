@@ -115,5 +115,6 @@
   "panel.pane_closed": "{name} を閉じました",
   "panel.stopped_count": "{count} 個のサービスを停止しました",
   "panel.started_all_skipped": "全体の起動が完了。既に実行中: {names}",
-  "panel.already_running": "既に実行中: {names}"
+  "panel.already_running": "既に実行中: {names}",
+  "reason.timeout_waiting": "{names} の準備待ちがタイムアウトしました"
 }

@@ -25,6 +25,7 @@ flowchart TD
 ## 2. 서비스 시작 (`up` / `run`)
 
 실행 중인 서비스는 건너뛰고, 나머지를 `depends_on` 순서대로 시작합니다.
+대시보드의 시작도 같은 규칙입니다. 컨트롤 박스가 없으면 먼저 `devrun` space에 만듭니다.
 
 ```mermaid
 flowchart TD

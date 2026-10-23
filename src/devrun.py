@@ -104,6 +104,13 @@ def open_control_box(project_dir, config):
                                    "tab_id": tab_id, "panes": [], "control_box": pane_id})
 
 
+def ensure_control_box(project_dir, config):
+    """서비스를 띄우기 전에 컨트롤 박스가 있는지 본다. 없으면 open_control_box 로 devrun space 에 만든다.
+    CLI up 과 대시보드의 시작이 이 규칙을 같이 쓴다. 이미 있으면 아무것도 하지 않는다."""
+    if not core.live_state(project_dir, core.live_pane_ids()):
+        open_control_box(project_dir, config)
+
+
 def _devrun_workspace_id():
     """label 이 devrun 인 space 의 id. 여러 개면 목록의 첫 번째 (없으면 None)."""
     spaces = core.herdr("workspace", "list").get("workspaces", [])

@@ -18,6 +18,7 @@ import webbrowser
 from pathlib import Path
 
 import core
+import devrun
 import presets
 import procs
 import term
@@ -262,15 +263,22 @@ class Panel:
                 for command, cell in self.line_button_cells(width)]
 
     def column_widths(self, width):
-        """(상태 열, 서비스 열, 포트 열). 좁으면 포트 열을 숨기고, 더 좁으면 상태를 아이콘만 보인다."""
+        """(상태 열, 서비스 열, 포트 열). 좁으면 포트 열을 숨기고, 더 좁으면 상태를 아이콘만 보인다.
+
+        서비스 열은 머리글 글자 뒤에 최소 한 칸이 남아야 한다. 그렇지 못하면 포트 열을 먼저 숨겨
+        "서비스"와 "포트" 머리글이 붙어 보이지 않게 한다."""
         port_width = max(8, text_width(t("panel.header.port")) + 2) if width >= 40 else 0
         if width >= 30:
             status_width = max(text_width(f"{icon} {t(key)}") for icon, key, _ in STATUS_VIEW.values()) + 2
         else:
             status_width = 2
         buttons_width = self.line_buttons_width(width, status_width, port_width)
-        name_width = max(1, width - 3 - status_width - port_width - buttons_width)
-        return status_width, name_width, port_width
+        name_width = width - 3 - status_width - port_width - buttons_width
+        if port_width and name_width < text_width(t("panel.header.service")) + 1:
+            port_width = 0
+            buttons_width = self.line_buttons_width(width, status_width, port_width)
+            name_width = width - 3 - status_width - buttons_width
+        return status_width, max(1, name_width), port_width
 
     def visible_range(self, capacity):
         """목록에 보일 (시작 index, 개수, 위아래 표시 줄을 쓰는지). 선택한 행이 항상 보이게 scroll 을 맞춘다."""
@@ -431,6 +439,15 @@ class Panel:
 
     # ------------------------------------------------------------ 동작
 
+    def ensure_control_box(self):
+        """서비스를 띄우기 전에 컨트롤 박스를 맞춘다 (CLI up 과 같은 규칙). 실패하면 메시지를 남기고 False."""
+        try:
+            devrun.ensure_control_box(self.project_dir, self.config)
+        except core.DevrunError as error:
+            self.set_message(t("panel.error", error=error))
+            return False
+        return True
+
     def busy(self, message, names, work):
         """오래 걸리는 동작 전에 상태를 '처리 중'으로 바꿔 먼저 그린다."""
         for name in names:
@@ -449,7 +466,7 @@ class Panel:
                 self.execute("start" if stopped else "stop")
         elif command == "start":
             # 하나만 시작할 때는 depends_on 을 기다리지 않는다 (사용자가 직접 고른 것이므로)
-            if service:
+            if service and self.ensure_control_box():
                 self.busy(t("panel.starting", name=service["name"]), [service["name"]],
                           lambda: core.start_service(self.project_dir, self.config, service))
                 self.set_message(t("panel.started", name=service["name"]))
@@ -465,9 +482,10 @@ class Panel:
                 self.set_message(t("panel.restarted", name=service["name"]))
         elif command == "start_all":
             # 기다리는 동안에도 입력·갱신이 되도록 루프에서 한 단계씩 진행한다 (advance_plan)
-            self.plan = core.StartPlan(self.project_dir, self.config)
-            self.set_message(t("panel.starting_all"))
-            self.advance_plan()
+            if self.ensure_control_box():
+                self.plan = core.StartPlan(self.project_dir, self.config)
+                self.set_message(t("panel.starting_all"))
+                self.advance_plan()
             self.refresh()
         elif command == "stop_all":
             if self.plan:
