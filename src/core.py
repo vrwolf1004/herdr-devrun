@@ -402,9 +402,9 @@ def start_service(project_dir, config, service, focus=False):
         state = {"project": str(project_dir), "label": label, "tab_id": created["tab"]["tab_id"], "panes": []}
         pane_id = pane_id_of(created)
     else:
-        # 컨트롤 박스 바로 오른쪽, 그다음 서비스 오른쪽, 이후는 마지막 pane 아래로 쌓는다.
+        # 컨트롤 박스 오른쪽에 첫 서비스, 이후 서비스는 모두 마지막 pane 아래로 쌓는다 (오른쪽 세로 열).
         last = state["panes"][-1]["pane_id"] if state["panes"] else state["control_box"]
-        direction = "right" if len(state["panes"]) <= 1 else "down"
+        direction = "down" if state["panes"] else "right"
         pane_id = pane_id_of(herdr("pane", "split", last, "--direction", direction,
                                    "--cwd", folder, "--no-focus", *env_args(service)))
 
