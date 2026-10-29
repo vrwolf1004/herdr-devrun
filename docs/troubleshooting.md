@@ -18,6 +18,8 @@ herdr plugin log list --plugin herdr-devrun
 | 액션이 바로 실패, stderr에 `python`/`python3`를 찾을 수 없음 | Python이 PATH에 없음 | Windows는 `python`, Linux/macOS는 `python3`가 PATH에 있는지 확인한다. 설치 후 herdr 서버를 재시작한다 (`herdr server stop` → `herdr`) |
 | Windows에서 `python` 실행 시 Microsoft Store가 열림 | Store 별칭(App execution alias)만 있고 실제 Python이 없음 | python.org 설치본을 설치하고 PATH에 추가하거나, 설정 → 앱 실행 별칭에서 python 별칭을 끈다 |
 | `.herdr-devrun.json 을 찾을 수 없습니다` | 액션을 실행한 pane 폴더와 그 상위에 설정 파일이 없음 | 프로젝트 안의 pane에서 실행하거나 `init`으로 만든다. `herdr plugin action invoke`는 **포커스된 pane** 기준이다 |
+| 스페이스는 열렸는데 서비스가 안 뜸, 또는 `control-box`가 안 보임 | 액션을 설정 파일이 없는 pane(예: `C:\work\app`)에서 실행함 | 프로젝트 폴더 안의 pane에서 실행하거나 CLI로 `--dir <프로젝트 폴더>`를 지정한다 |
+| `down` 후 `up` 했더니 이전 스페이스가 화면에 없음 | 재시작하면 `devrun` 스페이스 ID가 바뀜 (예: `wW` → `wX`) | `herdr workspace list` 에서 `label: devrun` 의 새 ID를 확인하고 `herdr workspace focus <ID>` 로 포커스하거나 목록에서 클릭한다 |
 | `services 가 없습니다` / `name, command 가 필요합니다` / `name 이 중복됩니다` | 설정 파일 내용 문제 | [usage.md](usage.md) 4장 형식대로 고친다 |
 | 설정 오류에 `port`, `timeout`, `depends_on`이 표시됨 | 값 형식이 잘못됐거나 의존 이름/순환 문제 | [usage.md](usage.md) 4장의 검증 규칙을 확인한다. `port`는 1~65535 정수, timeout은 0 이상 숫자, `depends_on`은 존재하는 이름의 목록이어야 하며 순환할 수 없다 |
 | 시작 액션이 명령을 pane에 입력하지 못했다고 실패함 | herdr가 서비스 명령을 실행 pane에 전달하지 못함 | 첫 서비스 시작 중 만들어진 탭과 상태는 정리된다. 기존 서비스 탭에 추가 중이었다면 새 pane만 닫히고 상태에서 제거된다. 반면, 명령이 입력된 뒤 프로세스가 종료된 경우 pane은 로그 확인을 위해 남는다 |

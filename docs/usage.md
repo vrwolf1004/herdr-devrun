@@ -110,6 +110,17 @@ herdr server reload-config  # Apply it to the running server
 - Gradle and Maven services get the Spring Boot defaults `port: 8080` and `url: http://localhost:8080`. Change them if your service uses another port.
 - For multi-module Gradle projects or pnpm monorepos that need a specific app selected, edit the generated command.
 
+### Several projects
+
+- Keep one `.herdr-devrun.json` per project folder. devrun uses the nearest one, searching from the start folder upward. One file cannot describe several projects, because each service's `cwd` is relative to the folder that holds the file.
+- Actions start from the focused pane's working directory. Use a pane inside the project, or pass `--dir` to the CLI:
+
+  ```sh
+  python -X utf8 src/devrun.py up --dir <project-folder>
+  ```
+
+- A pane whose folder has no config file (for example a parent folder such as `C:\work\app`) fails with `.herdr-devrun.json 을 찾을 수 없습니다`.
+
 ## 4. Configuration format
 
 ```json

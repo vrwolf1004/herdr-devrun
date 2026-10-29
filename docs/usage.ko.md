@@ -106,6 +106,17 @@ herdr server reload-config  # 실행 중인 서버에 반영
 - Gradle/Maven 서비스에는 Spring Boot 기본값 `port: 8080`, `url: http://localhost:8080`을 함께 넣는다. 실제 포트와 다르면 고친다.
 - 멀티 모듈 Gradle이나 pnpm 모노레포처럼 루트에서 특정 앱을 지정해야 하는 경우는 감지 결과를 직접 고친다.
 
+### 여러 프로젝트 쓰기
+
+- 프로젝트 폴더마다 `.herdr-devrun.json` 을 하나씩 둔다. 시작 폴더부터 위로 올라가며 가장 가까운 파일을 쓴다. `cwd` 가 파일이 있는 폴더 기준이라, 파일 하나로 여러 프로젝트를 표현할 수 없다.
+- 액션은 **포커스된 pane의 작업 폴더**를 기준으로 실행된다. 프로젝트 안의 pane에서 실행하거나, CLI에서 `--dir` 을 지정한다:
+
+  ```sh
+  python -X utf8 src/devrun.py up --dir <프로젝트 폴더>
+  ```
+
+- 설정 파일이 없는 폴더(예: `C:\work\app`)의 pane에서 실행하면 `.herdr-devrun.json 을 찾을 수 없습니다` 오류가 난다.
+
 ## 4. 설정 파일 형식
 
 ```json
