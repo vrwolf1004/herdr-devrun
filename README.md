@@ -8,7 +8,7 @@ Start and manage a project's development services in separate panes from one her
 
 ## Dashboard design
 
-The dashboard shows service status, ports, and recent logs. Each service row has Start/Stop, Edit, Delete, and Close buttons; the bottom line has Start all, Stop all, Browser, Config, Add, and Close. Restart is the `r` key. It opens in the project's tab in a shared `devrun` space, to the left of the services; Ctrl+C returns to the shell.
+The dashboard shows service status, ports, and recent logs. Each service row has Start/Stop, Edit, Delete, and Close buttons; the bottom line has Start all, Stop all, Browser, Config, Add, and Close. Press `r` to restart a service. The dashboard opens in the project's tab in a shared `devrun` space, to the left of the services. Ctrl+C closes the dashboard and returns to the shell.
 
 ```text
  ▣ devrun · my-project                                  2/3 running
@@ -20,11 +20,11 @@ The dashboard shows service status, ports, and recent logs. Each service row has
 
   Start all   Stop all   Browser   Config   + Add   Close
 
-─ Logs · backend ──────────────────────────────────────────────
+─ Log · backend ───────────────────────────────────────────────
  Started Application in 4.2 seconds
 ```
 
-This plugin uses a project dashboard rather than an Agents-sidebar block.
+This plugin shows a project dashboard, not a block in the Agents sidebar.
 
 ## Installation
 
@@ -43,15 +43,22 @@ herdr plugin install vrwolf1004/herdr-devrun
 | `panel` | Open the project dashboard |
 | `init` | Create a draft `.herdr-devrun.json` |
 
-On Windows, append `-windows` to each action ID. The action uses the focused pane's project; see the [usage guide](docs/usage.md) for configuration and examples.
+On Windows, append `-windows` to each action ID. Each action uses the project of the focused pane. See the [usage guide](docs/usage.md) for configuration and examples.
 
-`run` is a separate herdr action ID that invokes the same start behavior as
-`up`. Invalid project configuration is reported as an action error; if herdr
-cannot enter a newly created service command, devrun closes the new tab and
-removes its saved state (or closes only the newly added pane in an existing
-tab). See the [usage guide](docs/usage.md) for validation rules and recovery.
+`run` is a separate herdr action ID that runs the same start behavior as
+`up`. An invalid project configuration is reported as an action error. If herdr
+fails to run a new service command, devrun closes the new tab and removes its
+saved state (or closes only the newly added pane in an existing tab). See the
+[usage guide](docs/usage.md) for validation rules and recovery.
 
 ## Release notes
+
+### 0.6.5
+
+- Restart from the dashboard (`r`) creates the control box first, like Start, so services never open outside the `devrun` space.
+- The bottom key hint is shorter so it fits narrow dashboards. Buttons still show Browser, Config, and Close; the `o`, `e`, and `q` keys still work.
+- Japanese wording is consistent across messages.
+- Language button in the dashboard's bottom row: pick a UI language from a list. The choice is saved to `HERDR_PLUGIN_CONFIG_DIR/config.json` when that folder is set.
 
 ### 0.5.5
 

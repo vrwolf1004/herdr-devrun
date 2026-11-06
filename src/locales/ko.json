@@ -35,7 +35,7 @@
   "panel.log_title": "로그 · {name}",
   "panel.log_title_empty": "로그",
   "panel.not_running": "(실행 중이 아닙니다)",
-  "panel.footer": "↑↓ 선택 · Enter 시작/중지 · r 재시작 · a/x 전체 시작/중지 · o 브라우저 · e 설정 · q 닫기",
+  "panel.footer": "↑↓ 선택 · Enter 시작/중지 · r 재시작 · a/x 전체",
   "panel.button.start": "▶ 시작",
   "panel.button.stop": "■ 중지",
   "panel.button.restart": "↻ 재시작",
@@ -116,5 +116,9 @@
   "panel.stopped_count": "{count}개 서비스를 중지했습니다",
   "panel.started_all_skipped": "전체 시작 완료. 이미 실행 중: {names}",
   "panel.already_running": "이미 실행 중: {names}",
-  "reason.timeout_waiting": "{names} 준비를 기다리다 시간 초과"
+  "reason.timeout_waiting": "{names} 준비를 기다리다 시간 초과",
+  "panel.button.language": "언어",
+  "panel.field.language": "언어",
+  "panel.language_changed": "언어를 {name}(으)로 바꿨습니다.",
+  "panel.language_not_saved": "이번 실행에만 {name} 언어를 적용했습니다 (HERDR_PLUGIN_CONFIG_DIR 이 없어 저장하지 못했습니다)."
 }

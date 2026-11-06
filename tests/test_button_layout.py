@@ -14,7 +14,7 @@ from core import Status
 ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 
 # 하단 버튼 줄 (위에서 아래, 왼쪽에서 오른쪽). 서비스 제어는 각 서비스 줄에 있다.
-BOTTOM = ["start_all", "stop_all", "browser", "config", "add", "quit"]
+BOTTOM = ["start_all", "stop_all", "browser", "config", "language", "add", "quit"]
 
 
 class ButtonLayoutTest(unittest.TestCase):

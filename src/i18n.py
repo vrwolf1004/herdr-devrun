@@ -95,6 +95,29 @@ def language():
     return _language
 
 
+LANGUAGE_NAMES = {"en": "English", "ko": "한국어", "ru": "Русский", "fr": "Français",
+                  "es": "Español", "de": "Deutsch", "ja": "日本語"}
+
+
+def save_language(language):
+    """고른 언어를 HERDR_PLUGIN_CONFIG_DIR/config.json 의 "lang" 에 적는다. 다른 키는 그대로 둔다.
+    설정 폴더가 없거나 config.json 을 읽지 못하면 파일을 건드리지 않고 False 를 돌려준다."""
+    config_dir = os.environ.get("HERDR_PLUGIN_CONFIG_DIR")
+    if not config_dir:
+        return False
+    path = Path(config_dir) / "config.json"
+    try:
+        data = json.loads(path.read_text(encoding="utf-8-sig")) if path.exists() else {}
+        if not isinstance(data, dict):
+            return False
+        data["lang"] = language
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    except (OSError, ValueError):
+        return False
+    return True
+
+
 def t(key, **values):
     text = _messages.get(key) or _fallback.get(key) or key
     return text.format_map(_KeepMissing(values)) if values else text

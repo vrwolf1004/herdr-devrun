@@ -35,7 +35,7 @@
   "panel.log_title": "Log · {name}",
   "panel.log_title_empty": "Log",
   "panel.not_running": "(läuft nicht)",
-  "panel.footer": "↑↓ wählen · Enter starten/stoppen · r neu starten · a/x alle starten/stoppen · o Browser · e Konfig · q schließen",
+  "panel.footer": "↑↓ wählen · Enter starten/stoppen · r neustart · a/x alle",
   "panel.button.start": "▶ Starten",
   "panel.button.stop": "■ Stoppen",
   "panel.button.restart": "↻ Neustart",
@@ -116,5 +116,9 @@
   "panel.stopped_count": "{count} Dienste gestoppt",
   "panel.started_all_skipped": "Alles gestartet. Bereits aktiv: {names}",
   "panel.already_running": "Bereits aktiv: {names}",
-  "reason.timeout_waiting": "Zeitüberschreitung beim Warten auf {names}"
+  "reason.timeout_waiting": "Zeitüberschreitung beim Warten auf {names}",
+  "panel.button.language": "Sprache",
+  "panel.field.language": "Sprache",
+  "panel.language_changed": "Sprache auf {name} gesetzt.",
+  "panel.language_not_saved": "Sprache {name} nur für diese Sitzung (HERDR_PLUGIN_CONFIG_DIR fehlt, nicht gespeichert)."
 }

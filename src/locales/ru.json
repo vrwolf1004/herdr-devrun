@@ -35,7 +35,7 @@
   "panel.log_title": "Журнал · {name}",
   "panel.log_title_empty": "Журнал",
   "panel.not_running": "(не запущен)",
-  "panel.footer": "↑↓ выбор · Enter старт/стоп · r перезапуск · a/x запустить/остановить все · o браузер · e настройки · q закрыть",
+  "panel.footer": "↑↓ выбор · Enter старт/стоп · r перезапуск · a/x все",
   "panel.button.start": "▶ Старт",
   "panel.button.stop": "■ Стоп",
   "panel.button.restart": "↻ Перезапуск",
@@ -116,5 +116,9 @@
   "panel.stopped_count": "Остановлено сервисов: {count}",
   "panel.started_all_skipped": "Запуск всех завершён. Уже запущены: {names}",
   "panel.already_running": "Уже запущены: {names}",
-  "reason.timeout_waiting": "превышено время ожидания: {names}"
+  "reason.timeout_waiting": "превышено время ожидания: {names}",
+  "panel.button.language": "Язык",
+  "panel.field.language": "Язык",
+  "panel.language_changed": "Язык изменён: {name}.",
+  "panel.language_not_saved": "Язык {name} только для этого сеанса (HERDR_PLUGIN_CONFIG_DIR не задан, не сохранено)."
 }

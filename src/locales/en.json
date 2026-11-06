@@ -35,7 +35,7 @@
   "panel.log_title": "Log · {name}",
   "panel.log_title_empty": "Log",
   "panel.not_running": "(not running)",
-  "panel.footer": "↑↓ select · Enter start/stop · r restart · a/x start/stop all · o browser · e config · q close",
+  "panel.footer": "↑↓ select · Enter start/stop · r restart · a/x all",
   "panel.button.start": "▶ Start",
   "panel.button.stop": "■ Stop",
   "panel.button.restart": "↻ Restart",
@@ -116,5 +116,9 @@
   "panel.stopped_count": "Stopped {count} services",
   "panel.started_all_skipped": "Start all done. Already running: {names}",
   "panel.already_running": "Already running: {names}",
-  "reason.timeout_waiting": "timed out waiting for {names}"
+  "reason.timeout_waiting": "timed out waiting for {names}",
+  "panel.button.language": "Language",
+  "panel.field.language": "Language",
+  "panel.language_changed": "Language set to {name}.",
+  "panel.language_not_saved": "Language set to {name} for this session only. HERDR_PLUGIN_CONFIG_DIR is not set, so it was not saved."
 }

@@ -41,6 +41,8 @@ herdr plugin link C:\work\app\herdr-devrun   # Linux/macOS 는 clone 한 경로
 
 예를 들어 `HERDR_DEVRUN_LANG=ko`로 설정하면 한글 문구를 사용한다. `ko-KR`, `ko_KR.UTF-8` 같은 로케일 표기도 인식한다. 환경변수나 플러그인 설정을 지정하면 OS 언어보다 우선하며, 번역에 없는 문구는 영어 번역으로 대체한다.
 
+대시보드 하단 줄의 `언어` 버튼을 눌러 목록에서 고를 수도 있다. 선택은 `HERDR_PLUGIN_CONFIG_DIR/config.json`의 `"lang"`에 저장하고, 이 폴더가 없으면 이번 실행에만 적용한다. `HERDR_DEVRUN_LANG`은 저장된 선택보다 우선한다.
+
 ### 액션 id
 
 herdr는 액션 id 중복을 허용하지 않는다. 그래서 OS별 실행기(`python` / `python3`)에 맞춰 같은 동작을 두 번 선언하고 Windows 쪽 id에 `-windows`를 붙였다(herdr-file-viewer, herdr-sidebar와 같은 관례). 이 문서는 Linux/macOS id로 쓴다. **Windows에서는 뒤에 `-windows`를 붙인다.**

@@ -19,6 +19,7 @@ from pathlib import Path
 
 import core
 import devrun
+import i18n
 import presets
 import procs
 import term
@@ -67,6 +68,7 @@ ROW_NAME_MIN = 4           # 줄 버튼을 넣고도 서비스 이름 열이 이
 LOG_NAME = "panel.log"
 LOG_MAX_BYTES = 64 * 1024
 CHOICE_FIELDS = ("category", "tech")  # 목록에서 고르는 칸 (↑↓ 선택, Enter 다음)
+LIST_FIELDS = CHOICE_FIELDS + ("language",)  # 목록 칸. language 는 언어 버튼 전용이라 추가 폼에는 넣지 않는다
 FORM_FIELDS = ("name", "cwd", "command", "port", "url", "depends_on")
 ADD_FIELDS = CHOICE_FIELDS + FORM_FIELDS
 
@@ -222,6 +224,7 @@ class Panel:
             ("stop_all", "97;48;5;239"),
             ("browser", "97;48;5;239"),
             ("config", "97;48;5;239"),
+            ("language", "97;48;5;239"),
             ("add", "97;48;5;239"),
             ("quit", "97;48;5;239"),
         ]
@@ -367,7 +370,7 @@ class Panel:
         fresh = bool(self.message) and time.monotonic() - self.message_at < MESSAGE_SECONDS
         notice_rows = 1 if self.form and fresh else 0
         log_height = max(0, height - len(lines) - 1 - notice_rows)
-        if self.form and self.form_field() in CHOICE_FIELDS:  # 목록에서 고르는 중이면 로그 자리에 선택지를 보인다
+        if self.form and self.form_field() in LIST_FIELDS:  # 목록에서 고르는 중이면 로그 자리에 선택지를 보인다
             for row, (_, label) in enumerate(self.form_options()[:log_height]):
                 selected = row == self.form["cursor"]
                 lines.append(style(fit(f" {'▸' if selected else ' '} {label}", width), "1;97" if selected else "37"))
@@ -518,6 +521,8 @@ class Panel:
             self.open_browser(service)
         elif command == "config":
             self.open_config()
+        elif command == "language":
+            self.start_language_form()
         elif command == "quit":
             self.running = False
         else:
@@ -536,6 +541,23 @@ class Panel:
                      "values": {}, "index": 0, "text": "", "cursor": 0, "preset": None, "applied": None}
         self.start_step()
 
+    def start_language_form(self):
+        """하단 언어 버튼: 목록에서 언어를 고른다. 현재 언어에 커서를 둔다."""
+        self.form = {"mode": "language", "service": None, "fields": ("language",),
+                     "defaults": {"language": i18n.language()}, "values": {}, "index": 0, "text": "",
+                     "cursor": 0, "preset": None, "applied": None}
+        self.start_step()
+
+    def finish_language(self):
+        code = self.form["values"]["language"]
+        self.form = None
+        i18n.set_language(code)
+        name = i18n.LANGUAGE_NAMES[code]
+        if i18n.save_language(code):
+            self.set_message(t("panel.language_changed", name=name))
+        else:
+            self.set_message(t("panel.language_not_saved", name=name))
+
     def form_field(self):
         return self.form["fields"][self.form["index"]]
 
@@ -544,6 +566,8 @@ class Panel:
         field = self.form_field()
         if field == "category":
             return [(each, t("panel.category." + each)) for each in presets.CATEGORIES]
+        if field == "language":
+            return [(code, i18n.LANGUAGE_NAMES[code]) for code in i18n.SUPPORTED]
         if field == "tech":
             items = presets.PRESETS[self.form["values"]["category"]]
             return [(each["id"], each["label"]) for each in items] or [("custom", t("panel.preset.custom"))]
@@ -560,7 +584,7 @@ class Panel:
     def form_prompt(self):
         form = self.form
         field = self.form_field()
-        if field in CHOICE_FIELDS:
+        if field in LIST_FIELDS:
             _, label = self.form_options()[form["cursor"]]
             return f"{t('panel.field.' + field)}: {label}  {t('panel.form.choice_hint')}"
         default = form["defaults"][field]
@@ -574,7 +598,7 @@ class Panel:
             self.set_message(t("panel.form.cancelled"))
         elif event.key == "enter":
             self.form_submit()
-        elif self.form_field() in CHOICE_FIELDS:
+        elif self.form_field() in LIST_FIELDS:
             if event.key in ("up", "down"):
                 step = -1 if event.key == "up" else 1
                 form["cursor"] = (form["cursor"] + step) % len(self.form_options())
@@ -586,7 +610,7 @@ class Panel:
     def form_submit(self):
         form = self.form
         field = self.form_field()
-        if field in CHOICE_FIELDS:
+        if field in LIST_FIELDS:
             value = self.form_options()[form["cursor"]][0]
             form["values"][field] = value
             if field == "tech":
@@ -646,6 +670,9 @@ class Panel:
         self.set_message(t("panel.form.deleted", name=service["name"]))
 
     def finish_form(self):
+        if self.form["mode"] == "language":
+            self.finish_language()
+            return
         form = self.form
         original = form["service"]
         try:

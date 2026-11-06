@@ -42,6 +42,8 @@ The dashboard and notifications support `en`, `ko`, `ru`, `fr`, `es`, `de`, and 
 
 For example, set `HERDR_DEVRUN_LANG=ko` to use Korean. Locale values such as `ko-KR` and `ko_KR.UTF-8` are recognized. An explicitly configured language takes precedence over the OS language. Missing translations fall back to English.
 
+You can also change the language in the dashboard: select the `Language` button in the bottom row and choose from the list. The choice is saved as `"lang"` in `HERDR_PLUGIN_CONFIG_DIR/config.json` when that folder is set; otherwise it applies to the current run only. `HERDR_DEVRUN_LANG` still takes precedence over the saved choice.
+
 ### Action IDs
 
 herdr does not allow duplicate action IDs. The plugin declares the same behavior separately for each OS to use the appropriate executable (`python` or `python3`), and adds `-windows` to Windows action IDs. This follows conventions used by plugins such as herdr-file-viewer and herdr-sidebar.

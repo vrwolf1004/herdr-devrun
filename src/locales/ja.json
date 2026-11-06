@@ -35,7 +35,7 @@
   "panel.log_title": "ログ · {name}",
   "panel.log_title_empty": "ログ",
   "panel.not_running": "(実行されていません)",
-  "panel.footer": "↑↓ 選択 · Enter 開始/停止 · r 再起動 · a/x すべて開始/停止 · o ブラウザ · e 設定 · q 閉じる",
+  "panel.footer": "↑↓ 選択 · Enter 開始/停止 · r 再起動 · a/x 全体",
   "panel.button.start": "▶ 開始",
   "panel.button.stop": "■ 停止",
   "panel.button.restart": "↻ 再起動",
@@ -113,8 +113,12 @@
   "panel.dialog.close_hint": "y 閉じる · n / Esc キャンセル",
   "panel.dialog.close_ok": "閉じる",
   "panel.pane_closed": "{name} を閉じました",
-  "panel.stopped_count": "{count} 個のサービスを停止しました",
-  "panel.started_all_skipped": "全体の起動が完了。既に実行中: {names}",
-  "panel.already_running": "既に実行中: {names}",
-  "reason.timeout_waiting": "{names} の準備待ちがタイムアウトしました"
+  "panel.stopped_count": "サービスを {count} 件停止しました",
+  "panel.started_all_skipped": "すべて開始が完了しました。すでに実行中: {names}",
+  "panel.already_running": "すでに実行中: {names}",
+  "reason.timeout_waiting": "{names} の準備待ちがタイムアウトしました",
+  "panel.button.language": "言語",
+  "panel.field.language": "言語",
+  "panel.language_changed": "言語を{name}に変更しました。",
+  "panel.language_not_saved": "{name} は今回の実行のみ適用しました (HERDR_PLUGIN_CONFIG_DIR が未設定のため保存できません)。"
 }

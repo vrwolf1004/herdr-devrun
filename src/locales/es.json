@@ -35,7 +35,7 @@
   "panel.log_title": "Registro · {name}",
   "panel.log_title_empty": "Registro",
   "panel.not_running": "(no está en ejecución)",
-  "panel.footer": "↑↓ elegir · Enter iniciar/detener · r reiniciar · a/x iniciar/detener todo · o navegador · e config · q cerrar",
+  "panel.footer": "↑↓ elegir · Enter iniciar/parar · r reiniciar · a/x todo",
   "panel.button.start": "▶ Iniciar",
   "panel.button.stop": "■ Detener",
   "panel.button.restart": "↻ Reiniciar",
@@ -116,5 +116,9 @@
   "panel.stopped_count": "{count} servicios detenidos",
   "panel.started_all_skipped": "Inicio completo. Ya en ejecución: {names}",
   "panel.already_running": "Ya en ejecución: {names}",
-  "reason.timeout_waiting": "tiempo agotado esperando a {names}"
+  "reason.timeout_waiting": "tiempo agotado esperando a {names}",
+  "panel.button.language": "Idioma",
+  "panel.field.language": "Idioma",
+  "panel.language_changed": "Idioma cambiado a {name}.",
+  "panel.language_not_saved": "Idioma {name} solo para esta sesión (HERDR_PLUGIN_CONFIG_DIR no definido, no guardado)."
 }
