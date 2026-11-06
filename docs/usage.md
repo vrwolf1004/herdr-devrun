@@ -198,7 +198,7 @@ Writing tips:
 
 The services of a project run in one tab named after the project (or `tab` in the configuration). The tab is in a shared space (herdr workspace) named `devrun`; each project adds its own tab to that space. The first pane of the tab is the dashboard (`control-box`), and service panes are placed to its right.
 - `up` starts only services that are not already running. If some are running, the remaining ones are added to the same tab.
-- Starting from the dashboard (the Start button or `a`) follows the same rule: if the control box is missing, it is created in the `devrun` space first. If the control box cannot be created, nothing is started and an error is shown. Restart does not follow this rule yet.
+- Starting from the dashboard (the Start button or `a`) follows the same rule: if the control box is missing, it is created in the `devrun` space first. If the control box cannot be created, nothing is started and an error is shown. Restart from the dashboard (`r`) follows the same rule.
 - Use the dashboard (section 6) to manage an individual service.
 - You can close a tab or pane manually. The next run detects removed panes and cleans up the state.
 

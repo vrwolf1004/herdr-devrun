@@ -476,7 +476,7 @@ class Panel:
                           lambda: core.stop_service(self.project_dir, service["name"], core.stop_timeout(service)))
                 self.set_message(t("panel.stopped", name=service["name"]))
         elif command == "restart":
-            if service:
+            if service and self.ensure_control_box():
                 self.busy(t("panel.restarting", name=service["name"]), [service["name"]],
                           lambda: core.restart_service(self.project_dir, self.config, service))
                 self.set_message(t("panel.restarted", name=service["name"]))

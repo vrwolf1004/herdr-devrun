@@ -194,7 +194,7 @@ class StartServiceTest(unittest.TestCase):
         core.start_service(self.project, {}, self.service("worker"))
         directions = [call[4] for call in self.splits()]
         anchors = [call[2] for call in self.splits()]
-        self.assertEqual(directions, ["right", "right", "down"])
+        self.assertEqual(directions, ["right", "down", "down"])
         self.assertEqual(anchors, ["cb", "new", "new"])
         self.assertFalse(any(call[:2] == ("tab", "close") for call in self.herdr.calls))
 
