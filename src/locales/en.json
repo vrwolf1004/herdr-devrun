@@ -1,4 +1,6 @@
 {
+  "panel.hint.help": "Ctrl+H help",
+  "panel.help.body": "↑ ↓  select service\nEnter  start / stop\nCtrl+S  start all   Ctrl+X  stop all\nCtrl+R  restart all   Ctrl+O  browser   Ctrl+E  config\nCtrl+L  language   Ctrl+C  quit",
   "notice.title": "devrun",
   "notice.error_title": "devrun error",
   "notice.already_running": "Already running: {label}",
@@ -117,8 +119,6 @@
   "panel.started_all_skipped": "Start all done. Already running: {names}",
   "panel.already_running": "Already running: {names}",
   "reason.timeout_waiting": "timed out waiting for {names}",
-  "panel.button.language": "Language",
-  "panel.field.language": "Language",
   "panel.language_changed": "Language set to {name}.",
   "panel.language_not_saved": "Language set to {name} for this session only. HERDR_PLUGIN_CONFIG_DIR is not set, so it was not saved."
 }

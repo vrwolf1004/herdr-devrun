@@ -1,4 +1,6 @@
 {
+  "panel.hint.help": "Ctrl+H справка",
+  "panel.help.body": "↑ ↓  выбор сервиса\nEnter  старт / стоп\nCtrl+S  запустить все   Ctrl+X  остановить все\nCtrl+R  перезапуск всех   Ctrl+O  браузер   Ctrl+E  настройки\nCtrl+L  Язык   Ctrl+C  выход",
   "notice.title": "devrun",
   "notice.error_title": "Ошибка devrun",
   "notice.already_running": "Уже запущено: {label}",
@@ -117,8 +119,6 @@
   "panel.started_all_skipped": "Запуск всех завершён. Уже запущены: {names}",
   "panel.already_running": "Уже запущены: {names}",
   "reason.timeout_waiting": "превышено время ожидания: {names}",
-  "panel.button.language": "Язык",
-  "panel.field.language": "Язык",
   "panel.language_changed": "Язык изменён: {name}.",
   "panel.language_not_saved": "Язык {name} только для этого сеанса (HERDR_PLUGIN_CONFIG_DIR не задан, не сохранено)."
 }

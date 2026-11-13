@@ -1,4 +1,6 @@
 {
+  "panel.hint.help": "Ctrl+H 도움말",
+  "panel.help.body": "↑ ↓  서비스 선택\nEnter  시작 / 중지\nCtrl+S  전체 시작   Ctrl+X  전체 종료\nCtrl+R  전체 재시작   Ctrl+O  브라우저   Ctrl+E  설정\nCtrl+L  언어   Ctrl+C  종료",
   "notice.title": "devrun",
   "notice.error_title": "devrun 오류",
   "notice.already_running": "이미 실행 중입니다: {label}",
@@ -117,8 +119,6 @@
   "panel.started_all_skipped": "전체 시작 완료. 이미 실행 중: {names}",
   "panel.already_running": "이미 실행 중: {names}",
   "reason.timeout_waiting": "{names} 준비를 기다리다 시간 초과",
-  "panel.button.language": "언어",
-  "panel.field.language": "언어",
   "panel.language_changed": "언어를 {name}(으)로 바꿨습니다.",
   "panel.language_not_saved": "이번 실행에만 {name} 언어를 적용했습니다 (HERDR_PLUGIN_CONFIG_DIR 이 없어 저장하지 못했습니다)."
 }

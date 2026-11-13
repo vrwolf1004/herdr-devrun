@@ -14,7 +14,7 @@ from core import Status
 ANSI = re.compile(r"\x1b\[[0-9;?]*[A-Za-z]")
 
 # 하단 버튼 줄 (위에서 아래, 왼쪽에서 오른쪽). 서비스 제어는 각 서비스 줄에 있다.
-BOTTOM = ["start_all", "stop_all", "browser", "config", "language", "add", "quit"]
+BOTTOM = ["start_all", "stop_all", "browser", "add"]
 
 
 class ButtonLayoutTest(unittest.TestCase):
@@ -52,7 +52,7 @@ class ButtonLayoutTest(unittest.TestCase):
 
     def test_restart_is_not_a_button_but_still_a_key(self):
         self.assertNotIn("restart", self.bottom_commands(100))
-        self.assertEqual(self.panel.command_for(term.Event("key", key="r")), "restart")
+        self.assertEqual(self.panel.command_for(term.Event("key", key="\x12")), "restart_all")
 
     def test_each_service_row_has_toggle_edit_delete_at_wide_width(self):
         self.render(100)

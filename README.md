@@ -8,7 +8,7 @@ Start and manage a project's development services in separate panes from one her
 
 ## Dashboard design
 
-The dashboard shows service status, ports, and recent logs. Each service row has Start/Stop, Edit, Delete, and Close buttons; the bottom line has Start all, Stop all, Browser, Config, Add, and Close. Press `r` to restart a service. The dashboard opens in the project's tab in a shared `devrun` space, to the left of the services. Ctrl+C closes the dashboard and returns to the shell.
+The dashboard shows service status, ports, and recent logs. Each service row has Start/Stop, Edit, Delete, and Close buttons. The bottom button row has Start all, Stop all, Browser, and + Add. The bottom line shows `Ctrl+H help`. The dashboard opens in the project's tab in a shared `devrun` space, to the left of the services.
 
 ```text
  ▣ devrun · my-project                                  2/3 running
@@ -18,11 +18,42 @@ The dashboard shows service status, ports, and recent logs. Each service row has
    ◐ Starting  frontend                                   :5173
    ○ Stopped   worker
 
-  Start all   Stop all   Browser   Config   + Add   Close
+  Start all   Stop all   Browser   + Add
 
 ─ Log · backend ───────────────────────────────────────────────
  Started Application in 4.2 seconds
+                                                 Ctrl+H help
 ```
+
+Press `Ctrl+H` to open the help popup over the dashboard. Press any key or click to close it:
+
+```text
+        ╭───────────────────────────────────────╮
+        │              Ctrl+H help              │
+        ├───────────────────────────────────────┤
+        │ ↑ ↓  select service                   │
+        │ Enter  start / stop                   │
+        │ Ctrl+S  start all   Ctrl+X  stop all  │
+        │ Ctrl+R  restart all   Ctrl+O  browser │
+        │ Ctrl+E  config   Ctrl+L  language     │
+        │ Ctrl+C  quit                          │
+        ╰───────────────────────────────────────╯
+```
+
+### Keys
+
+| Key | Action |
+| --- | --- |
+| `↑` `↓` | Select a service |
+| `Enter` | Start or stop the selected service |
+| `Ctrl+S` | Start all services |
+| `Ctrl+X` | Stop all services |
+| `Ctrl+R` | Restart all services (stop, then start) |
+| `Ctrl+O` | Open the browser for the selected service |
+| `Ctrl+E` | Open the configuration |
+| `Ctrl+L` | Change the language: System → English → … → Japanese → System (saved to `config.json`) |
+| `Ctrl+H` | Show or hide the help popup |
+| `Ctrl+C` | Close the dashboard and return to the shell |
 
 This plugin shows a project dashboard, not a block in the Agents sidebar.
 
@@ -51,25 +82,6 @@ fails to run a new service command, devrun closes the new tab and removes its
 saved state (or closes only the newly added pane in an existing tab). See the
 [usage guide](docs/usage.md) for validation rules and recovery.
 
-## Release notes
-
-### 0.6.5
-
-- Restart from the dashboard (`r`) creates the control box first, like Start, so services never open outside the `devrun` space.
-- The bottom key hint is shorter so it fits narrow dashboards. Buttons still show Browser, Config, and Close; the `o`, `e`, and `q` keys still work.
-- Japanese wording is consistent across messages.
-- Language button in the dashboard's bottom row: pick a UI language from a list. The choice is saved to `HERDR_PLUGIN_CONFIG_DIR/config.json` when that folder is set.
-
-### 0.5.5
-
-- Dashboard buttons: each service row has Start/Stop, Edit, Delete, and Close (`⊗`); the bottom line has Start all, Stop all, Browser, Config, Add, and Close. Restart is the `r` key.
-- Layout: services run in a tab of a shared `devrun` space, with the dashboard (`control-box`) as the tab's first pane.
-- Stop (and Stop all) stops the process and keeps its pane, marked as stopped; Start reuses that pane. `devrun down` still closes the tab.
-- Delete and Close ask for confirmation in a dialog; press `y` to confirm.
-- Windows batch prompts "(Y/N)" are answered with `Y` during a stop and before a start.
-- Start all lists services that were already running separately from the ones that failed.
-- The configuration opens in Notepad on Windows.
-
 ## Requirements
 
 - Windows, Linux, or macOS
@@ -85,16 +97,7 @@ saved state (or closes only the newly added pane in an existing tab). See the
 - [Development and tests](docs/development.md)
 - [Design and scope](docs/start-idea.md)
 - [TODO](docs/todo.md)
-
-## Development
-
-```sh
-python -m unittest discover -s tests
-```
-
-## License
-
-[MIT](LICENSE)
+- [Additional sections](docs/readme-extras.md): sections moved out of this README
 
 ## Support the project
 

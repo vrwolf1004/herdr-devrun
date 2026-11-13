@@ -99,9 +99,21 @@ LANGUAGE_NAMES = {"en": "English", "ko": "한국어", "ru": "Русский", "f
                   "es": "Español", "de": "Deutsch", "ja": "日本語"}
 
 
+CYCLE = (None, *SUPPORTED)  # Ctrl+L 순서. None 은 시스템 (저장값 없음, 환경에서 다시 정한다)
+
+
+def saved_language():
+    """config.json 에 저장된 언어. 없으면 None (시스템)."""
+    return _from_plugin_config()
+
+
+def next_language(current):
+    return CYCLE[(CYCLE.index(current) + 1) % len(CYCLE)]
+
+
 def save_language(language):
-    """고른 언어를 HERDR_PLUGIN_CONFIG_DIR/config.json 의 "lang" 에 적는다. 다른 키는 그대로 둔다.
-    설정 폴더가 없거나 config.json 을 읽지 못하면 파일을 건드리지 않고 False 를 돌려준다."""
+    """고른 언어를 HERDR_PLUGIN_CONFIG_DIR/config.json 의 "lang" 에 적는다. None 이면 "lang" 을 지운다.
+    다른 키는 그대로 둔다. 설정 폴더가 없거나 config.json 을 읽지 못하면 파일을 건드리지 않고 False 를 돌려준다."""
     config_dir = os.environ.get("HERDR_PLUGIN_CONFIG_DIR")
     if not config_dir:
         return False
@@ -110,7 +122,10 @@ def save_language(language):
         data = json.loads(path.read_text(encoding="utf-8-sig")) if path.exists() else {}
         if not isinstance(data, dict):
             return False
-        data["lang"] = language
+        if language is None:
+            data.pop("lang", None)
+        else:
+            data["lang"] = language
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     except (OSError, ValueError):

@@ -1,4 +1,6 @@
 {
+  "panel.hint.help": "Strg+H Hilfe",
+  "panel.help.body": "↑ ↓  Dienst wählen\nEnter  starten / stoppen\nStrg+S  alle starten   Strg+X  alle stoppen\nStrg+R  alle neu starten   Strg+O  Browser   Strg+E  Konfig\nStrg+L  Sprache   Strg+C  beenden",
   "notice.title": "devrun",
   "notice.error_title": "devrun-Fehler",
   "notice.already_running": "Läuft bereits: {label}",
@@ -117,8 +119,6 @@
   "panel.started_all_skipped": "Alles gestartet. Bereits aktiv: {names}",
   "panel.already_running": "Bereits aktiv: {names}",
   "reason.timeout_waiting": "Zeitüberschreitung beim Warten auf {names}",
-  "panel.button.language": "Sprache",
-  "panel.field.language": "Sprache",
   "panel.language_changed": "Sprache auf {name} gesetzt.",
   "panel.language_not_saved": "Sprache {name} nur für diese Sitzung (HERDR_PLUGIN_CONFIG_DIR fehlt, nicht gespeichert)."
 }

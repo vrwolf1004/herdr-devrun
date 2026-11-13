@@ -76,10 +76,11 @@ class DashboardTest(unittest.TestCase):
             self.assertIn(label.split()[-1], lines[y][x1:x2 + 1 + 4])
 
     def test_hangul_keys(self):
-        for key, command in (("ㄱ", "restart"), ("ㅁ", "start_all"), ("ㅌ", "stop_all"),
-                             ("ㅐ", "browser"), ("ㄷ", "config"), ("ㅂ", "quit"), ("R", "restart")):
+        for key, command in (("\x13", "start_all"), ("\x18", "stop_all"), ("\x12", "restart_all"),
+                             ("\x0f", "browser"), ("\x05", "config")):
             self.assertEqual(self.panel.command_for(term.Event("key", key=key)), command)
-        self.assertIsNone(self.panel.command_for(term.Event("key", key="ㅋ")))
+        for key in ("ㄱ", "ㅁ", "ㅂ", "ㅋ", "r", "R"):  # 글자 키는 더 이상 명령이 아니다
+            self.assertIsNone(self.panel.command_for(term.Event("key", key=key)))
 
     def test_every_status_has_a_view(self):
         self.assertEqual(set(panel.STATUS_VIEW), set(Status))

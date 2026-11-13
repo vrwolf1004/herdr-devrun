@@ -42,7 +42,7 @@ The dashboard and notifications support `en`, `ko`, `ru`, `fr`, `es`, `de`, and 
 
 For example, set `HERDR_DEVRUN_LANG=ko` to use Korean. Locale values such as `ko-KR` and `ko_KR.UTF-8` are recognized. An explicitly configured language takes precedence over the OS language. Missing translations fall back to English.
 
-You can also change the language in the dashboard: select the `Language` button in the bottom row and choose from the list. The choice is saved as `"lang"` in `HERDR_PLUGIN_CONFIG_DIR/config.json` when that folder is set; otherwise it applies to the current run only. `HERDR_DEVRUN_LANG` still takes precedence over the saved choice.
+Press `Ctrl+L` on the dashboard to change the language without a list. Each press moves to the next value: System → English → Korean → Russian → French → Spanish → German → Japanese → System. The choice is saved to `"lang"` in `HERDR_PLUGIN_CONFIG_DIR/config.json`; System removes that key and uses the environment again. Without `HERDR_PLUGIN_CONFIG_DIR`, the change lasts for this run only. `HERDR_DEVRUN_LANG` still takes precedence over the saved value.
 
 ### Action IDs
 
@@ -162,7 +162,7 @@ herdr server reload-config  # Apply it to the running server
 | `services[].cwd` | | Path relative to the configuration file (absolute paths are also allowed). Defaults to the project root; an invalid path is an error |
 | `services[].env` | | Environment variables for the pane process, as `"KEY": "VALUE"` |
 | `services[].port` | | TCP port used to distinguish "starting" from "running". The service will not start if the port is already in use |
-| `services[].url` | | URL opened by the dashboard's Browser button (`o`) |
+| `services[].url` | | URL opened by the dashboard's Browser button (`Ctrl+O`) |
 | `services[].depends_on` | | Services that must be ready first; controls start-all ordering (see section 5) |
 | `services[].start_timeout` | | Maximum seconds to wait for dependencies; default: 120 |
 | `services[].stop_timeout` | | Maximum seconds to wait for process exit after Ctrl+C; default: 10 |
@@ -200,7 +200,7 @@ Writing tips:
 
 The services of a project run in one tab named after the project (or `tab` in the configuration). The tab is in a shared space (herdr workspace) named `devrun`; each project adds its own tab to that space. The first pane of the tab is the dashboard (`control-box`), and service panes are placed to its right.
 - `up` starts only services that are not already running. If some are running, the remaining ones are added to the same tab.
-- Starting from the dashboard (the Start button or `a`) follows the same rule: if the control box is missing, it is created in the `devrun` space first. If the control box cannot be created, nothing is started and an error is shown. Restart from the dashboard (`r`) follows the same rule.
+- Starting from the dashboard (the Start button or `Ctrl+S`) follows the same rule: if the control box is missing, it is created in the `devrun` space first. If the control box cannot be created, nothing is started and an error is shown. Restart all from the dashboard (`Ctrl+R`) follows the same rule.
 - Use the dashboard (section 6) to manage an individual service.
 - You can close a tab or pane manually. The next run detects removed panes and cleans up the state.
 
@@ -244,11 +244,14 @@ The dashboard runs as a command in the pane's shell. Pressing Ctrl+C stops it an
    ◐ Starting  frontend                                   :5173
    ○ Stopped   worker
 
-  Start all   Stop all   Browser   Config   + Add   Close
+  Start all   Stop all   Browser   + Add
 
 ─ Logs · backend ──────────────────────────────────────────────
  Started Application in 4.2 seconds
+                                                  Ctrl+H help
 ```
+
+The bottom line shows `Ctrl+H help` on the right. Press `Ctrl+H` to open a help popup that lists the keys; press any key or click to close it.
 
 Each service row ends with `▶ Start` or `■ Stop`, `✎ Edit`, `✕ Delete`, and `⊗` (close the pane). Below 72 columns these show as icons only (`▶ ■ ✎ ✕ ⊗`).
 
@@ -269,16 +272,21 @@ Each service row ends with `▶ Start` or `■ Stop`, `✎ Edit`, `✕ Delete`, 
 |---|---|---|
 | Select a service | Click a row or use the wheel | `↑` `↓` `Home` `End` |
 | Start/stop selected service | Double-click a row, or the Start/Stop button on its row | `Enter` |
-| Restart selected service | none | `r` |
 | Edit a service | `✎ Edit` on its row | none |
 | Delete a service | `✕ Delete` on its row | none |
 | Close a service pane | `⊗` on its row | none |
-| Start all / stop all | Buttons on the bottom line | `a` / `x` |
-| Open the service URL | Browser button | `o` |
-| Open the configuration file | Config button | `e` |
-| Close dashboard | Close button | `q`, `Esc`, `Ctrl+C` |
+| Start all / stop all | Buttons on the bottom button row | `Ctrl+S` / `Ctrl+X` |
+| Restart all (stop all, then start all) | none | `Ctrl+R` |
+| Open the service URL | Browser button | `Ctrl+O` |
+| Open the configuration file | none | `Ctrl+E` |
+| Change the language (cycles, see Display language) | none | `Ctrl+L` |
+| Add a service | `+ Add` button | none |
+| Show or hide the help popup | none | `Ctrl+H` |
+| Close dashboard | none | `Ctrl+C` |
 
-- Shortcuts also work while a Korean keyboard layout is active (`ㄱ=r`, `ㅁ=a`, `ㅌ=x`, `ㅐ=o`, `ㄷ=e`, `ㅂ=q`). In a confirmation box, `ㅛ=y` and `ㅜ=n`.
+- Since 0.6.6 the letter keys (`a`, `x`, `r`, `o`, `e`, `q`) and `Esc` do nothing on the dashboard. There is no single-service restart; stop and start the service with `Enter`, or restart everything with `Ctrl+R`.
+- `Ctrl+H` is told apart from Backspace on Windows. On Linux and macOS terminals both send the same code, so the help popup may not open there.
+- In a confirmation box, `y` confirms and `n`, `Esc`, or `Ctrl+C` cancels. With a Korean keyboard layout, `ㅛ=y` and `ㅜ=n`.
 - Status and log previews refresh every second. The log preview shows the selected service's recent output; wrapped pane lines are displayed as their original single lines.
 - Start-all accepts input while it waits. Selecting Stop all during startup cancels remaining starts.
 - If the service list exceeds the screen, it scrolls with the selected row and shows `▲ n more` / `▼ n more` indicators.
@@ -287,8 +295,8 @@ Each service row ends with `▶ Start` or `■ Stop`, `✎ Edit`, `✕ Delete`, 
 - Unexpected errors do not close the dashboard. A summary appears on the message line, with details in `panel.log` in the state directory.
 - Saving the configuration reloads it automatically. If it is invalid, an error appears and the previous configuration remains active.
 - The configuration opens in Notepad on Windows (`notepad.exe`), with `open` on macOS, and with `xdg-open` on Linux.
-- Stop (`Enter`, or the Start/Stop button) stops that service's process and keeps its pane at the shell prompt, marked stopped. If the process does not exit within `stop_timeout`, the pane is closed. Stop all (`x`) does the same for every running service and keeps the tab and the control box.
-- Restart (`r`) stops the service and starts it again. A stopped or exited pane is reused: the command is entered again in the same pane. If the process did not exit within `stop_timeout`, the pane is closed and a new one is created.
+- Stop (`Enter`, or the Start/Stop button) stops that service's process and keeps its pane at the shell prompt, marked stopped. If the process does not exit within `stop_timeout`, the pane is closed. Stop all (`Ctrl+X`) does the same for every running service and keeps the tab and the control box.
+- Restart all (`Ctrl+R`) runs Stop all and then Start all. Stopped panes are reused: the command is entered again in the same pane.
 - Close (`⊗`) closes the service's pane after you confirm. A running process is stopped first. The tab and the control box stay.
 - Closing the dashboard does not stop services.
 

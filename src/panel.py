@@ -43,10 +43,12 @@ STATUS_VIEW = {
 }
 assert set(STATUS_VIEW) == set(Status), "STATUS_VIEW is missing a Status"
 
-KEY_COMMANDS = {"enter": "toggle", "esc": "quit", "ctrl+c": "quit",
-                "r": "restart", "a": "start_all", "x": "stop_all", "o": "browser", "e": "config", "q": "quit"}
+# 키: Enter 는 선택한 서비스 시작/중지, 나머지는 Ctrl+글자 (Ctrl+C 종료, Ctrl+H 도움말)
+KEY_COMMANDS = {"enter": "toggle", "ctrl+c": "quit", "": "help",
+                "": "start_all", "": "stop_all", "": "restart_all", "": "browser", "": "config",
+                "": "language"}
 # 한/영 상태가 한글이면 같은 자리의 두벌식 자모가 들어오므로 영문 키로 바꿔 받는다.
-HANGUL_KEYS = {"ㄱ": "r", "ㅁ": "a", "ㅌ": "x", "ㅐ": "o", "ㄷ": "e", "ㅂ": "q", "ㅛ": "y", "ㅜ": "n"}
+HANGUL_KEYS = {"ㅛ": "y", "ㅜ": "n"}
 DIALOG_BOX_HEIGHT = 7  # 확인 알림 창의 높이 (테두리 포함)
 DIALOG_BOX_WIDTH = 52
 # 서비스 줄 끝 버튼: (명령 id, 글자 키). 시작/중지는 상태에 따라 글자가 바뀐다.
@@ -68,7 +70,7 @@ ROW_NAME_MIN = 4           # 줄 버튼을 넣고도 서비스 이름 열이 이
 LOG_NAME = "panel.log"
 LOG_MAX_BYTES = 64 * 1024
 CHOICE_FIELDS = ("category", "tech")  # 목록에서 고르는 칸 (↑↓ 선택, Enter 다음)
-LIST_FIELDS = CHOICE_FIELDS + ("language",)  # 목록 칸. language 는 언어 버튼 전용이라 추가 폼에는 넣지 않는다
+LIST_FIELDS = CHOICE_FIELDS
 FORM_FIELDS = ("name", "cwd", "command", "port", "url", "depends_on")
 ADD_FIELDS = CHOICE_FIELDS + FORM_FIELDS
 
@@ -131,8 +133,10 @@ class Panel:
         self.buttons = []       # 하단 버튼: (y, x1, x2, 명령 id)
         self.row_buttons = []   # 서비스 줄 버튼: (y, x1, x2, 명령 id, 서비스 index)
         self.pid_cache = {}     # pane id → 셸 pid (pane 이 살아 있는 동안 바뀌지 않는다)
+        self.language_choice = i18n.saved_language()  # Ctrl+L 순환 위치 (None = 시스템)
         self.plan = None        # 진행 중인 전체 시작 (core.StartPlan)
         self.dialog = None      # 삭제 확인 알림 창 {"service": 서비스} (떠 있는 동안만)
+        self.help_open = False  # Ctrl+H 도움말 창 (떠 있는 동안만)
         self.dialog_box = None  # 그려진 알림 창 (top, left, width): 창 밖 클릭 판정용
         self.dialog_buttons = []  # 알림 창 버튼: (y, x1, x2, 명령 id)
         self.form = None        # 진행 중인 추가·수정·삭제 입력 (start_form)
@@ -223,10 +227,7 @@ class Panel:
             ("start_all", "97;48;5;239"),
             ("stop_all", "97;48;5;239"),
             ("browser", "97;48;5;239"),
-            ("config", "97;48;5;239"),
-            ("language", "97;48;5;239"),
             ("add", "97;48;5;239"),
-            ("quit", "97;48;5;239"),
         ]
         return [(command, f" {t('panel.button.' + command)} ", sgr) for command, sgr in specs]
 
@@ -389,13 +390,41 @@ class Panel:
         elif fresh:
             lines.append(style(fit(f" {self.message}", width), "1;93"))
         else:
-            lines.append(style(fit(f" {t('panel.footer')}", width), "90"))
+            lines.append(self.footer_line(width))
 
         if self.dialog:
             self.draw_dialog(lines, width, height)
+        if self.help_open:
+            self.draw_help(lines, width, height)
 
         frame = f"{ESC}[H" + "\r\n".join(f"{line}{ESC}[0m{ESC}[K" for line in lines[:height])
         term.write(frame)
+
+    def footer_line(self, width):
+        """아래 안내 줄: 오른쪽 끝에 Ctrl+H 도움말 힌트만 회색으로 둔다."""
+        right = t("panel.hint.help")
+        if width < text_width(right) + 2:  # 아주 좁으면 힌트를 폭에 맞춰 자른다
+            return style(fit(right, width), "90")
+        return fit("", width - text_width(right) - 1) + style(f"{right} ", "90")
+
+    def draw_help(self, lines, width, height):
+        """Ctrl+H 도움말 창을 화면 가운데에 덮어 그린다. 줄은 panel.help.body 의 줄바꿈 기준이다."""
+        title = t("panel.hint.help")
+        body = t("panel.help.body").split("\n")
+        inner = max(12, min(width - 4, max([text_width(title) + 2] + [text_width(row) + 2 for row in body])))
+        frame_sgr = "1;97;48;5;237"
+        rows = [style("┌" + "─" * inner + "┐", frame_sgr),
+                style("│", frame_sgr) + style(fit(f" {title}", inner), "1;97;48;5;237") + style("│", frame_sgr),
+                style("├" + "─" * inner + "┤", frame_sgr)]
+        rows += [style("│", frame_sgr) + style(fit(f" {row}", inner), "97;48;5;237") + style("│", frame_sgr)
+                 for row in body]
+        rows.append(style("└" + "─" * inner + "┘", frame_sgr))
+        top = max(0, (height - len(rows)) // 2)
+        left = max(0, (width - inner - 2) // 2)
+        while len(lines) < top + len(rows):
+            lines.append("")
+        for index, row in enumerate(rows):
+            lines[top + index] = " " * left + row + " " * max(0, width - left - inner - 2)
 
     def draw_dialog(self, lines, width, height):
         """확인 알림 창을 화면 가운데에 덮어 그린다. 폭·높이에 맞춰 창 크기를 줄인다."""
@@ -478,11 +507,6 @@ class Panel:
                 self.busy(t("panel.stopping", name=service["name"]), [service["name"]],
                           lambda: core.stop_service(self.project_dir, service["name"], core.stop_timeout(service)))
                 self.set_message(t("panel.stopped", name=service["name"]))
-        elif command == "restart":
-            if service and self.ensure_control_box():
-                self.busy(t("panel.restarting", name=service["name"]), [service["name"]],
-                          lambda: core.restart_service(self.project_dir, self.config, service))
-                self.set_message(t("panel.restarted", name=service["name"]))
         elif command == "start_all":
             # 기다리는 동안에도 입력·갱신이 되도록 루프에서 한 단계씩 진행한다 (advance_plan)
             if self.ensure_control_box():
@@ -490,6 +514,9 @@ class Panel:
                 self.set_message(t("panel.starting_all"))
                 self.advance_plan()
             self.refresh()
+        elif command == "restart_all":
+            self.execute("stop_all")
+            self.execute("start_all")
         elif command == "stop_all":
             if self.plan:
                 self.plan.cancel()
@@ -522,7 +549,7 @@ class Panel:
         elif command == "config":
             self.open_config()
         elif command == "language":
-            self.start_language_form()
+            self.cycle_language()
         elif command == "quit":
             self.running = False
         else:
@@ -541,19 +568,12 @@ class Panel:
                      "values": {}, "index": 0, "text": "", "cursor": 0, "preset": None, "applied": None}
         self.start_step()
 
-    def start_language_form(self):
-        """하단 언어 버튼: 목록에서 언어를 고른다. 현재 언어에 커서를 둔다."""
-        self.form = {"mode": "language", "service": None, "fields": ("language",),
-                     "defaults": {"language": i18n.language()}, "values": {}, "index": 0, "text": "",
-                     "cursor": 0, "preset": None, "applied": None}
-        self.start_step()
-
-    def finish_language(self):
-        code = self.form["values"]["language"]
-        self.form = None
-        i18n.set_language(code)
-        name = i18n.LANGUAGE_NAMES[code]
-        if i18n.save_language(code):
+    def cycle_language(self):
+        """Ctrl+L: 시스템 → 지원 언어 순서로 바꾸고 바로 저장한다. 목록 폼은 띄우지 않는다."""
+        self.language_choice = i18n.next_language(self.language_choice)
+        i18n.set_language(i18n.detect() if self.language_choice is None else self.language_choice)
+        name = i18n.LANGUAGE_NAMES[i18n.language()]
+        if i18n.save_language(self.language_choice):
             self.set_message(t("panel.language_changed", name=name))
         else:
             self.set_message(t("panel.language_not_saved", name=name))
@@ -566,8 +586,6 @@ class Panel:
         field = self.form_field()
         if field == "category":
             return [(each, t("panel.category." + each)) for each in presets.CATEGORIES]
-        if field == "language":
-            return [(code, i18n.LANGUAGE_NAMES[code]) for code in i18n.SUPPORTED]
         if field == "tech":
             items = presets.PRESETS[self.form["values"]["category"]]
             return [(each["id"], each["label"]) for each in items] or [("custom", t("panel.preset.custom"))]
@@ -670,9 +688,6 @@ class Panel:
         self.set_message(t("panel.form.deleted", name=service["name"]))
 
     def finish_form(self):
-        if self.form["mode"] == "language":
-            self.finish_language()
-            return
         form = self.form
         original = form["service"]
         try:
@@ -780,6 +795,13 @@ class Panel:
     def dispatch(self, event):
         """입력 이벤트 하나를 처리한다. 폼이 열려 있으면 키는 폼이 받고, 클릭은 폼을 취소한 뒤 평소처럼 처리한다.
         휠은 폼 중에 무시한다."""
+        if self.help_open:  # 도움말 창이 떠 있으면 아무 키·클릭으로 닫는다 (Ctrl+C 는 그대로 끝낸다)
+            if event.kind == "key" and event.key == "ctrl+c":
+                self.running = False
+                return
+            if event.kind in ("key", "mouse") and (event.kind == "key" or event.mouse in ("down", "double")):
+                self.help_open = False
+            return
         if self.dialog:
             self.guarded(self.dialog_event, event, message_key="panel.error")
             return
@@ -792,7 +814,9 @@ class Panel:
             self.form = None  # 입력 중에 버튼을 누르면 입력을 취소하고 그 버튼을 처리한다
             self.set_message(t("panel.form.cancelled"))
         command = self.guarded(self.command_for, event, message_key="panel.error")
-        if command:
+        if command == "help":
+            self.help_open = True
+        elif command:
             self.guarded(self.execute, command, message_key="panel.error")
 
     def dialog_event(self, event):

@@ -85,19 +85,6 @@ class DashboardStartControlBoxTest(unittest.TestCase):
         self.assertLess(self.position(*create), self.position("start_service", "api"))
         self.assertEqual(self.start_states[0]["workspace_id"], "w9")
 
-    def test_restart_creates_the_control_box_before_restarting(self):
-        restarted = []
-
-        def fake_restart(project_dir, config, service):
-            restarted.append(list(self.herdr.calls))
-
-        self.panel.selected = 0
-        with mock.patch.object(core, "restart_service", side_effect=fake_restart):
-            self.panel.execute("restart")
-        create = ("workspace", "create", "--cwd", str(self.project), "--label", "devrun", "--focus")
-        self.assertEqual(len(restarted), 1)
-        self.assertIn(create, restarted[0])
-
     def test_existing_control_box_is_reused_not_recreated(self):
         self.saved_state = {"project": str(self.project), "label": "app", "workspace_id": "w5",
                             "tab_id": "t5", "panes": [], "control_box": "cb5"}

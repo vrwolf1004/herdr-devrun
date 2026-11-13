@@ -138,6 +138,8 @@ class _WindowsTerminal(_Screen):
             control_state = int.from_bytes(data[12:16], "little")
             if control_state & 0x000C and virtual_key == 0x43:  # Ctrl+C
                 return Event("key", key="ctrl+c")
+            if control_state & 0x000C and virtual_key == 0x08:  # Ctrl+H 는 VK_BACK 으로 와서 backspace 와 구분
+                return Event("key", key="\x08")
             if virtual_key in self._VIRTUAL_KEYS:
                 return Event("key", key=self._VIRTUAL_KEYS[virtual_key])
             if char and char != "\x00":

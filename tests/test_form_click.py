@@ -89,13 +89,6 @@ class FormClickTest(unittest.TestCase):
         self.assertEqual(self.panel.selected, 1)
         self.execute.assert_called_once_with("edit")
 
-    def test_add_form_closes_on_quit_button(self):
-        self.render()
-        self.open_form("add")
-        self.panel.dispatch(self.click("quit"))
-        self.assertIsNone(self.panel.form)
-        self.execute.assert_called_once_with("quit")
-
     def test_click_on_blank_area_only_cancels_the_form(self):
         self.render()
         self.open_form("edit")

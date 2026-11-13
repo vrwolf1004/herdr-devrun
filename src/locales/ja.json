@@ -1,4 +1,6 @@
 {
+  "panel.hint.help": "Ctrl+H ヘルプ",
+  "panel.help.body": "↑ ↓  サービス選択\nEnter  開始 / 停止\nCtrl+S  すべて開始   Ctrl+X  すべて停止\nCtrl+R  すべて再起動   Ctrl+O  ブラウザ   Ctrl+E  設定\nCtrl+L  言語   Ctrl+C  終了",
   "notice.title": "devrun",
   "notice.error_title": "devrun エラー",
   "notice.already_running": "すでに実行中です: {label}",
@@ -117,8 +119,6 @@
   "panel.started_all_skipped": "すべて開始が完了しました。すでに実行中: {names}",
   "panel.already_running": "すでに実行中: {names}",
   "reason.timeout_waiting": "{names} の準備待ちがタイムアウトしました",
-  "panel.button.language": "言語",
-  "panel.field.language": "言語",
   "panel.language_changed": "言語を{name}に変更しました。",
   "panel.language_not_saved": "{name} は今回の実行のみ適用しました (HERDR_PLUGIN_CONFIG_DIR が未設定のため保存できません)。"
 }

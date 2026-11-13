@@ -1,4 +1,6 @@
 {
+  "panel.hint.help": "Ctrl+H aide",
+  "panel.help.body": "↑ ↓  choisir un service\nEntrée  lancer / arrêter\nCtrl+S  tout lancer   Ctrl+X  tout arrêter\nCtrl+R  tout relancer   Ctrl+O  navigateur   Ctrl+E  config\nCtrl+L  Langue   Ctrl+C  quitter",
   "notice.title": "devrun",
   "notice.error_title": "Erreur devrun",
   "notice.already_running": "Déjà en cours : {label}",
@@ -117,8 +119,6 @@
   "panel.started_all_skipped": "Démarrage terminé. Déjà en cours : {names}",
   "panel.already_running": "Déjà en cours : {names}",
   "reason.timeout_waiting": "délai dépassé en attendant {names}",
-  "panel.button.language": "Langue",
-  "panel.field.language": "Langue",
   "panel.language_changed": "Langue définie : {name}.",
   "panel.language_not_saved": "Langue {name} pour cette session seulement (HERDR_PLUGIN_CONFIG_DIR absent, non enregistrée)."
 }
